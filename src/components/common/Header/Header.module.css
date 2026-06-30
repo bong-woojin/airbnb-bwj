@@ -1,0 +1,1015 @@
+.wrapper {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  background: #fff;
+  z-index: 100;
+  border-bottom: 1px solid #ebebeb;
+  transition: box-shadow 0.3s;
+}
+
+.scrolled {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.inner {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1920px;
+  padding: 0 48px;
+  height: 94px;
+  margin: 0 auto;
+}
+
+/* 탭 (숙소/체험/서비스) */
+.tabs {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  transition:
+    opacity 0.25s,
+    transform 0.25s;
+}
+
+.scrolled .tabs {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-10px);
+  pointer-events: none;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #717171;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.tab:hover {
+  color: #222;
+}
+
+.tab:hover .tabIconWrap {
+  transform: scale(1.1);
+}
+
+.tabActive {
+  color: #222;
+  font-weight: 600;
+}
+
+.tabActive::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 12px;
+  right: 12px;
+  height: 3px;
+  background: #222;
+  border-radius: 1px;
+}
+
+@keyframes iconAppear {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.75);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.tabIconWrap {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  animation: iconAppear 1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transition: transform 0.2s;
+}
+
+.tabIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 72px;
+  height: 72px;
+  max-width: none;
+  object-fit: contain;
+}
+
+/* 컴팩트 검색 */
+.compactSearch {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 40px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.25s,
+    transform 0.25s;
+  white-space: nowrap;
+}
+
+.scrolled .compactSearch {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.compactItem {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+}
+
+.compactItemLight {
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #717171;
+}
+
+.compactDivider {
+  width: 1px;
+  height: 20px;
+  background: #ddd;
+  flex-shrink: 0;
+}
+
+.compactBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ff385c;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 6px 6px 4px;
+  flex-shrink: 0;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+
+.compactBtn:hover {
+  background: #e61e4d;
+  transform: scale(1.05);
+}
+
+/* 확장 검색바 */
+.expandedSearch {
+  display: flex;
+  justify-content: center;
+  padding: 0 24px 36px;
+  max-height: 110px;
+  overflow: visible;
+  transition:
+    max-height 0.35s ease,
+    opacity 0.25s,
+    padding 0.3s;
+  margin-top: 10px;
+}
+
+.scrolled .expandedSearch {
+  max-height: 0;
+  opacity: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+}
+
+.searchBar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 40px;
+  box-shadow:
+    0px 0px 0px 1px rgba(0, 0, 0, 0.02),
+    0px 8px 24px 0px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 850px;
+  transition:
+    background 0.25s,
+    border-color 0.25s,
+    box-shadow 0.25s;
+}
+
+.searchBarActive {
+  background: #ebebeb;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.searchBarActive .searchDivider {
+  opacity: 0;
+}
+
+.searchBarActive .searchSection:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.searchSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 15px 32px;
+  cursor: pointer;
+  border-radius: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.searchSection:hover {
+  background: #ebebeb;
+}
+
+.searchLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: #222222;
+  line-height: 1.4;
+}
+
+.searchInput {
+  font-size: 14px;
+  color: #222222;
+  width: 100%;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: #6a6a6a;
+}
+
+.searchInputFilled {
+  font-weight: 600;
+  color: #222;
+}
+
+.locationSelected {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.locationSelectedText {
+  font-size: 14px;
+  color: #222;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.locationClearBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #717171;
+  transition: color 0.15s;
+  padding: 2px;
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+}
+
+.locationClearBtn:hover {
+  color: #222;
+}
+
+.searchDivider {
+  width: 1px;
+  height: 28px;
+  background: #ddd;
+  flex-shrink: 0;
+}
+
+.searchSection:hover + .searchDivider {
+  opacity: 0;
+}
+
+.searchDivider:has(+ .searchSection:hover) {
+  opacity: 0;
+}
+
+.searchBtn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ff385c;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+
+.searchBtn:hover {
+  background: #e61e4d;
+  transform: translateY(-50%) scale(1.04);
+}
+
+/* Nav */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav a {
+  font-size: 14px;
+  font-weight: 500;
+  padding: 11px 12px;
+  border-radius: 50px;
+  color: #222;
+  transition: background 0.2s;
+}
+
+.nav a:hover {
+  background: #f7f7f7;
+}
+
+.navItem {
+  width: 40px;
+  height: 40px;
+  background: #f2f2f2;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.navItem:hover {
+  background: #ebebeb;
+}
+
+.btnWrap {
+  display: flex;
+  gap: 8px;
+  margin-left: 4px;
+}
+
+/* Active search section — pill provides the white, section stays transparent */
+.searchSectionActive {
+  background: transparent !important;
+}
+
+.searchSectionActive:hover {
+  background: transparent !important;
+}
+
+/* Sliding pill behind sections */
+.sectionPill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: #fff;
+  border-radius: 40px;
+  z-index: 0;
+  pointer-events: none;
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.sectionPillTransition {
+  transition:
+    left 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    width 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Popup base */
+@keyframes popupIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes popupContentFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes popupContentFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 처음 열릴 때 위에서 페이드업 */
+.popupFirstOpen {
+  animation: popupIn 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* 팝업 내부 콘텐츠 슬라이드 (섹션 전환 시) */
+.popupContentFromRight {
+  animation: popupContentFromRight 0.18s ease both;
+}
+
+.popupContentFromLeft {
+  animation: popupContentFromLeft 0.18s ease both;
+}
+
+.popup {
+  position: absolute;
+  top: calc(100% + 10px);
+  background: #fff;
+  border-radius: 32px;
+  box-shadow:
+    0 2px 16px rgba(0, 0, 0, 0.1),
+    0 8px 32px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 200;
+  scrollbar-width: thin;
+  scrollbar-color: #ddd transparent;
+  /* 팝업 이동 트랜지션 */
+  transition:
+    left 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    width 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.popup::-webkit-scrollbar {
+  width: 4px;
+}
+
+.popup::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.popup::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 2px;
+}
+
+/* Location popup */
+.popupSectionTitle {
+  font-size: 11px;
+  font-weight: 700;
+  color: #717171;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+
+.destList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.destItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.destItem:hover {
+  background: #f7f7f7;
+}
+
+.destIcon {
+  width: 42px;
+  height: 42px;
+  background: #f2f2f2;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.destText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.destTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.destDesc {
+  font-size: 12px;
+  color: #717171;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Date popup tabs */
+.dateTabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.dateTabBtn {
+  padding: 8px 20px;
+  border: 1.5px solid #ddd;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    color 0.2s;
+}
+
+.dateTabBtn:hover {
+  border-color: #aaa;
+}
+
+.dateTabBtnActive {
+  border-color: #222;
+  background: #222;
+  color: #fff;
+}
+
+/* Calendar */
+.calWrapper {
+  display: flex;
+  gap: 32px;
+}
+
+.calMonth {
+  flex: 1;
+}
+
+.calMonthHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.calMonthName {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+}
+
+.calNavBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f2f2f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.calNavBtn:hover:not(:disabled) {
+  background: #ebebeb;
+}
+
+.calNavBtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.calNavSpacer {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.calWeekday {
+  text-align: center;
+  font-size: 12px;
+  color: #717171;
+  padding: 4px 0;
+  font-weight: 500;
+}
+
+.calDay {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s;
+  color: #222;
+}
+
+.calDay:hover:not(:disabled) {
+  background: #ebebeb;
+}
+
+.calDayPast {
+  color: #ccc;
+  cursor: default;
+}
+
+.calDaySelected {
+  background: #222 !important;
+  color: #fff !important;
+  border-radius: 50%;
+}
+
+.calDayRange {
+  background: #f2f2f2;
+  border-radius: 0;
+}
+
+/* Date flexibility row */
+.dateFlexRow {
+  display: flex;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.dateFlexBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 24px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #222;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    color 0.2s;
+}
+
+.dateFlexBtn:hover {
+  border-color: #aaa;
+}
+
+.dateFlexBtnActive {
+  border-color: #222;
+  background: #222;
+  color: #fff;
+}
+
+/* Flexible schedule */
+.flexWrapper {
+  padding-top: 4px;
+}
+
+.flexSubTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.flexDurations {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  justify-content: center;
+}
+
+.flexDurBtn {
+  padding: 8px 20px;
+  border: 1.5px solid #ddd;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.flexDurBtn:hover {
+  border-color: #aaa;
+}
+
+.flexDurBtnActive {
+  border-color: #222;
+  background: #f7f7f7;
+}
+
+.flexSliderWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.flexSliderOuter {
+  flex: 1;
+  overflow: hidden;
+}
+
+.flexSliderTrack {
+  display: grid;
+  grid-template-columns: repeat(12, calc((100% - 5 * 8px) / 6));
+  gap: 8px;
+  width: 100%;
+  transition: transform 0.35s ease;
+}
+
+.flexNavBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f2f2f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.flexNavBtn:hover {
+  background: #ebebeb;
+}
+
+.flexMonthCard {
+  height: 80px;
+  border: 1.5px solid #ddd;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: #222;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.flexMonthCard:hover {
+  border-color: #aaa;
+}
+
+.flexMonthCardActive {
+  border-color: #222;
+  background: #f7f7f7;
+}
+
+/* Guest popup */
+.guestRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+}
+
+.guestRowBorder {
+  border-bottom: 1px solid #ebebeb;
+}
+
+.guestLabel {
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+}
+
+.guestSub {
+  font-size: 13px;
+  color: #717171;
+  margin-top: 2px;
+}
+
+.guestCounter {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.counterBtn {
+  width: 30px;
+  height: 30px;
+  border: 1.5px solid #ddd;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #222;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  line-height: 1;
+}
+
+.counterBtn:hover:not(:disabled) {
+  border-color: #222;
+}
+
+.counterBtn:disabled {
+  color: #ddd;
+  border-color: #ebebeb;
+  cursor: default;
+}
+
+.counterVal {
+  font-size: 15px;
+  font-weight: 500;
+  min-width: 24px;
+  text-align: center;
+  color: #222;
+}
+
+/* ============================================================
+   반응형 브레이크포인트
+   ============================================================ */
+
+/* 1440 미만 */
+@media (max-width: 1439px) {
+  .inner {
+    padding: 0 40px;
+  }
+
+  .searchBar {
+    max-width: 760px;
+  }
+
+  .searchSection {
+    padding: 15px 24px;
+  }
+}
+
+/* 1128 미만 */
+@media (max-width: 1127px) {
+  .inner {
+    padding: 0 24px;
+    height: 80px;
+  }
+
+  .expandedSearch {
+    padding: 0 16px 28px;
+  }
+
+  .searchBar {
+    max-width: 100%;
+  }
+
+  .searchSection {
+    padding: 12px 18px;
+  }
+
+  .tab {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .tabIconWrap {
+    width: 30px;
+    height: 30px;
+  }
+
+  .tabIcon {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* 950 미만 */
+@media (max-width: 949px) {
+  .inner {
+    height: 72px;
+  }
+
+  .tabs {
+    display: none;
+  }
+
+  .compactSearch {
+    display: none;
+  }
+
+  .expandedSearch {
+    padding: 0 12px 24px;
+    margin-top: 4px;
+  }
+
+  .searchSection {
+    padding: 10px 14px;
+  }
+
+  .searchLabel {
+    font-size: 11px;
+  }
+
+  .searchInput {
+    font-size: 13px;
+  }
+
+  .nav a {
+    display: none;
+  }
+}
+
+/* 744 미만 */
+@media (max-width: 743px) {
+  .inner {
+    padding: 0 16px;
+    height: 64px;
+  }
+
+  .expandedSearch {
+    padding: 0 8px 16px;
+    margin-top: 0;
+  }
+
+  .searchBar {
+    border-radius: 16px;
+  }
+
+  .searchSection {
+    padding: 8px 12px;
+  }
+
+  .searchDivider {
+    height: 20px;
+  }
+
+  .searchBtn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .navItem {
+    width: 36px;
+    height: 36px;
+  }
+}

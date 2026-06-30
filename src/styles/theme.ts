@@ -1,0 +1,68 @@
+export const theme = {
+  colors: {
+    primary: "#FF385C",
+    primaryHover: "#E31C5F",
+    secondary: "#00A699",
+    black: "#222222",
+    darkGray: "#484848",
+    gray: "#717171",
+    lightGray: "#B0B0B0",
+    border: "#DDDDDD",
+    background: "#F7F7F7",
+    white: "#FFFFFF",
+    overlay: "rgba(0, 0, 0, 0.5)",
+    star: "#FF385C",
+  },
+  fonts: {
+    body: "'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  },
+  fontSizes: {
+    xs: "12px",
+    sm: "14px",
+    md: "16px",
+    lg: "18px",
+    xl: "22px",
+    xxl: "26px",
+    xxxl: "32px",
+  },
+  fontWeights: {
+    normal: 400,
+    medium: 500,
+    semibold: 600,
+    bold: 700,
+    extrabold: 800,
+  },
+  spacing: {
+    xs: "4px",
+    sm: "8px",
+    md: "16px",
+    lg: "24px",
+    xl: "32px",
+    xxl: "48px",
+    xxxl: "64px",
+  },
+  borderRadius: {
+    sm: "8px",
+    md: "12px",
+    lg: "16px",
+    xl: "24px",
+    full: "9999px",
+  },
+  shadows: {
+    sm: "0 1px 2px rgba(0,0,0,0.08)",
+    md: "0 2px 8px rgba(0,0,0,0.12)",
+    lg: "0 4px 16px rgba(0,0,0,0.16)",
+    card: "0 6px 20px rgba(0,0,0,0.2)",
+  },
+  breakpoints: {
+    sm: "576px",
+    md: "768px",
+    lg: "1024px",
+    xl: "1280px",
+    xxl: "1440px",
+  },
+  headerHeight: "80px",
+  searchBarHeight: "56px",
+} as const;
+
+export type Theme = typeof theme;
