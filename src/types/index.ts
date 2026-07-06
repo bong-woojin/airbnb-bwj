@@ -51,24 +51,3 @@ export interface Category {
   icon: string;
 }
 
-export interface SearchParams {
-  location: string;
-  checkIn: string | null;
-  checkOut: string | null;
-  guests: number;
-}
-
-export interface FilterState {
-  priceMin: number;
-  priceMax: number;
-  roomType: string;
-  amenities: string[];
-}
-
-export interface BookingState {
-  roomId: string | null;
-  checkIn: string | null;
-  checkOut: string | null;
-  guests: number;
-  totalPrice: number;
-}

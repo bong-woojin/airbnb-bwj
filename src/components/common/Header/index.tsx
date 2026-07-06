@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import styles from "./Header.module.css";
 
 type ActiveSection = "location" | "date" | "guest" | null;
@@ -32,6 +32,100 @@ const DESTINATIONS = [
   { icon: "🛕", title: "사찰 & 명상 여행", desc: "고요한 사찰에서 마음의 안정을 찾아보세요" },
 ];
 
+const STROKE_ICON_STYLE = {
+  display: "block" as const,
+  height: "16px",
+  width: "16px",
+  fill: "none" as const,
+  stroke: "currentcolor",
+  strokeWidth: 1.8,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+};
+
+const SERVICE_TYPES = [
+  {
+    title: "사진 촬영",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" aria-hidden="true" role="presentation" focusable="false" style={{ display: "block", height: "16px", width: "16px", fill: "currentcolor" }}>
+        <path d="M17.59 2a2 2 0 0 1 1.28.47l.13.12L21.42 5H25a5 5 0 0 1 4.98 4.56l.02.22V24a5 5 0 0 1-4.78 5H7a5 5 0 0 1-5-4.78V10a5 5 0 0 1 4.78-5h3.83L13 2.6a2 2 0 0 1 1.07-.57l.17-.02.18-.01zm0 2h-3.17l-2.97 3H7a3 3 0 0 0-3 2.82V24a3 3 0 0 0 2.82 3H25a3 3 0 0 0 3-2.82V10a3 3 0 0 0-2.82-3h-4.59zM16 9a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12zM7 9a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+      </svg>
+    ),
+  },
+  {
+    title: "셰프",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={STROKE_ICON_STYLE}>
+        <path d="M6 10a3 3 0 0 1 3-3 3 3 0 0 1 6 0 3 3 0 0 1 3 3c0 2.5-2 4.5-4.5 4.5h-3C7 14.5 6 12.5 6 10z" />
+        <path d="M8 21h8M9 21v-5.5M15 21v-5.5" />
+      </svg>
+    ),
+  },
+  {
+    title: "마사지",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={STROKE_ICON_STYLE}>
+        <path d="M9 12V5a1.5 1.5 0 0 1 3 0v6M12 11V4a1.5 1.5 0 0 1 3 0v7M15 11.5V6a1.5 1.5 0 0 1 3 0v9c0 3.5-2.5 6-6 6h-1c-2 0-3.2-.6-4.5-2L4 15.5c-.6-.7-.5-1.7.2-2.2.6-.5 1.5-.4 2 .1L8 15" />
+      </svg>
+    ),
+  },
+  {
+    title: "미식 딜리버리",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={STROKE_ICON_STYLE}>
+        <rect x="3" y="9" width="18" height="12" rx="2" />
+        <path d="M3 9l3-5h12l3 5M12 9v12" />
+      </svg>
+    ),
+  },
+  {
+    title: "트레이닝",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={STROKE_ICON_STYLE}>
+        <path d="M6 7v10M4 9v6M18 7v10M20 9v6M6 12h12" />
+      </svg>
+    ),
+  },
+  {
+    title: "메이크업",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={STROKE_ICON_STYLE}>
+        <path d="M9 21h6l1-9H8l1 9zM8 12l1-6a3 3 0 0 1 6 0l1 6" />
+      </svg>
+    ),
+  },
+  {
+    title: "헤어",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={STROKE_ICON_STYLE}>
+        <circle cx="6" cy="6" r="2.5" />
+        <circle cx="6" cy="18" r="2.5" />
+        <path d="M8.5 7.5L20 18M8.5 16.5L20 6" />
+      </svg>
+    ),
+  },
+  {
+    title: "스파 트리트먼트",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={STROKE_ICON_STYLE}>
+        <path d="M12 3c-4 3-6 7-6 11a6 6 0 0 0 12 0c0-4-2-8-6-11z" />
+        <path d="M12 21V10" />
+      </svg>
+    ),
+  },
+  {
+    title: "케이터링",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={STROKE_ICON_STYLE}>
+        <path d="M4 16a8 8 0 0 1 16 0" />
+        <path d="M2 16h20" />
+        <path d="M12 8V5" />
+        <circle cx="12" cy="4" r="1" />
+      </svg>
+    ),
+  },
+];
+
 const FLEX_MONTHS = Array.from({ length: 12 }, (_, i) => new Date(2026, 5 + i, 1));
 const CAL_MAX_OFFSET = 23;
 const DATE_FLEX_OPTIONS = [
@@ -46,6 +140,25 @@ const KO_DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
 function formatDate(d: Date) {
   return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+}
+
+// FLIP(First-Last-Invert-Play): sourceRect 위치/크기에서 시작해 el의 실제 위치/크기로 자연스럽게 줄어들거나 커지는 것처럼 보이게 함
+function runFlip(el: HTMLElement | null, sourceRect: DOMRect | null, baseTransform: string) {
+  if (!el || !sourceRect) return;
+  const last = el.getBoundingClientRect();
+  if (last.width === 0 || last.height === 0) return;
+  const scaleX = sourceRect.width / last.width;
+  const scaleY = sourceRect.height / last.height;
+  const dx = sourceRect.left + sourceRect.width / 2 - (last.left + last.width / 2);
+  const dy = sourceRect.top + sourceRect.height / 2 - (last.top + last.height / 2);
+
+  el.style.transition = "none";
+  el.style.transform = `${baseTransform} translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`;
+  void el.offsetWidth; // 강제 리플로우 — 위 트랜스폼을 즉시 반영시켜야 아래 트랜지션이 애니메이션됨
+  requestAnimationFrame(() => {
+    el.style.transition = "transform 0.4s cubic-bezier(0.2, 0, 0, 1)";
+    el.style.transform = baseTransform;
+  });
 }
 
 function sectionToIdx(s: ActiveSection): number {
@@ -176,9 +289,13 @@ function CalendarMonth({
   );
 }
 
-export default function Header() {
+interface HeaderProps {
+  activeTab: number;
+  onTabChange: (index: number) => void;
+}
+
+export default function Header({ activeTab, onTabChange }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
   const [activeSection, setActiveSection] = useState<ActiveSection>(null);
   const [prevSectionIdx, setPrevSectionIdx] = useState(-1);
   const [pillStyle, setPillStyle] = useState<PillStyle | null>(null);
@@ -187,6 +304,7 @@ export default function Header() {
   const [flexDuration, setFlexDuration] = useState<FlexDuration>(null);
   const [selectedFlexMonths, setSelectedFlexMonths] = useState<number[]>([]);
   const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedServiceType, setSelectedServiceType] = useState("");
   const [selectedStart, setSelectedStart] = useState<Date | null>(null);
   const [selectedEnd, setSelectedEnd] = useState<Date | null>(null);
   const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
@@ -199,6 +317,8 @@ export default function Header() {
   const isFirstRender = useRef(true);
   const isTransitioning = useRef(false);
   const searchBarRef = useRef<HTMLDivElement>(null);
+  const compactSearchRef = useRef<HTMLDivElement>(null);
+  const searchFlipSourceRect = useRef<DOMRect | null>(null);
   const sectionEls = useRef<(HTMLDivElement | null)[]>([null, null, null]);
 
   const today = new Date();
@@ -220,7 +340,12 @@ export default function Header() {
   function getPopupStyle(): React.CSSProperties {
     if (activeSection === "location") return { left: 0, width: "50%" };
     if (activeSection === "date") return { left: 0, width: "100%" };
-    if (activeSection === "guest") return { left: "50%", width: "50%" };
+    if (activeSection === "guest") {
+      if (activeTab === 2) {
+        return { left: "34%", width: "66%", padding: "40px 50px", borderRadius: "32px" };
+      }
+      return { left: "50%", width: "50%" };
+    }
     return {};
   }
 
@@ -252,6 +377,7 @@ export default function Header() {
       setScrolled((prev) => {
         if (!prev && window.scrollY > 80) {
           isTransitioning.current = true;
+          searchFlipSourceRect.current = searchBarRef.current?.getBoundingClientRect() ?? null;
           setTimeout(() => {
             isTransitioning.current = false;
           }, 400);
@@ -259,6 +385,7 @@ export default function Header() {
         }
         if (prev && window.scrollY < 40) {
           isTransitioning.current = true;
+          searchFlipSourceRect.current = compactSearchRef.current?.getBoundingClientRect() ?? null;
           setTimeout(() => {
             isTransitioning.current = false;
           }, 400);
@@ -271,6 +398,14 @@ export default function Header() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useLayoutEffect(() => {
+    if (scrolled) {
+      runFlip(compactSearchRef.current, searchFlipSourceRect.current, "translateX(-50%)");
+    } else {
+      runFlip(searchBarRef.current, searchFlipSourceRect.current, "");
+    }
+  }, [scrolled]);
 
   useEffect(() => {
     if (!activeSection) return;
@@ -332,7 +467,14 @@ export default function Header() {
       ? `${formatDate(selectedStart)} ~ ${formatDate(selectedEnd)}${flexSuffix}`
       : `${formatDate(selectedStart)}${flexSuffix}`
     : "날짜 추가";
-  const guestPlaceholder = totalGuests > 0 ? `게스트 ${totalGuests}명` : "게스트 추가";
+  const guestPlaceholder =
+    activeTab === 2
+      ? selectedServiceType || "서비스 추가"
+      : totalGuests > 0
+        ? `게스트 ${totalGuests}명`
+        : "게스트 추가";
+  const locationPlaceholder = activeTab === 1 ? "도시나 명소로 검색" : "여행지 검색";
+  const thirdSectionLabel = activeTab === 2 ? "서비스 유형" : "여행자";
 
   const guestRows = [
     { key: "adults" as const, label: "성인", sub: "13세 이상" },
@@ -390,7 +532,7 @@ export default function Header() {
               key={tab.label}
               className={`${styles.tab} ${activeTab === i ? styles.tabActive : ""}`}
               style={{ gap: [14, 6, 10][i] }}
-              onClick={() => setActiveTab(i)}
+              onClick={() => onTabChange(i)}
             >
               <span
                 className={styles.tabIconWrap}
@@ -419,7 +561,7 @@ export default function Header() {
         </div>
 
         {/* 컴팩트 검색 */}
-        <div className={styles.compactSearch}>
+        <div className={styles.compactSearch} ref={compactSearchRef}>
           <span className={styles.compactItem}>어디든지</span>
           <span className={styles.compactDivider} />
           <span className={styles.compactItem}>언제든지</span>
@@ -516,7 +658,7 @@ export default function Header() {
                 )}
               </div>
             ) : (
-              <input className={styles.searchInput} placeholder="여행지 검색" />
+              <input className={styles.searchInput} placeholder={locationPlaceholder} />
             )}
           </div>
           <div className={styles.searchDivider} />
@@ -547,7 +689,7 @@ export default function Header() {
             className={`${styles.searchSection} ${activeSection === "guest" ? styles.searchSectionActive : ""}`}
             onClick={() => openSection("guest")}
           >
-            <span className={styles.searchLabel}>여행자</span>
+            <span className={styles.searchLabel}>{thirdSectionLabel}</span>
             <input className={styles.searchInput} placeholder={guestPlaceholder} readOnly />
           </div>
 
@@ -729,43 +871,63 @@ export default function Header() {
                   </>
                 )}
 
-                {/* 여행자 */}
+                {/* 여행자 / 서비스 유형 */}
                 {activeSection === "guest" && (
-                  <>
-                    {guestRows.map((row, i) => (
-                      <div
-                        key={row.key}
-                        className={`${styles.guestRow} ${i < guestRows.length - 1 ? styles.guestRowBorder : ""}`}
-                      >
-                        <div>
-                          <div className={styles.guestLabel}>{row.label}</div>
-                          {row.sub && <div className={styles.guestSub}>{row.sub}</div>}
-                        </div>
-                        <div className={styles.guestCounter}>
-                          <button
-                            className={styles.counterBtn}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              adjustGuest(row.key, -1);
-                            }}
-                            disabled={guests[row.key] === 0}
-                          >
-                            −
-                          </button>
-                          <span className={styles.counterVal}>{guests[row.key]}</span>
-                          <button
-                            className={styles.counterBtn}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              adjustGuest(row.key, 1);
+                  activeTab === 2 ? (
+                    <>
+                      <div className={styles.serviceTypeGrid}>
+                        {SERVICE_TYPES.map((svc) => (
+                          <div
+                            key={svc.title}
+                            className={`${styles.serviceTypeItem} ${selectedServiceType === svc.title ? styles.serviceTypeItemActive : ""}`}
+                            onClick={() => {
+                              setSelectedServiceType(svc.title);
+                              closeSection();
                             }}
                           >
-                            +
-                          </button>
-                        </div>
+                            <span className={styles.serviceTypeIcon}>{svc.icon}</span>
+                            <span className={styles.serviceTypeLabel}>{svc.title}</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </>
+                    </>
+                  ) : (
+                    <>
+                      {guestRows.map((row, i) => (
+                        <div
+                          key={row.key}
+                          className={`${styles.guestRow} ${i < guestRows.length - 1 ? styles.guestRowBorder : ""}`}
+                        >
+                          <div>
+                            <div className={styles.guestLabel}>{row.label}</div>
+                            {row.sub && <div className={styles.guestSub}>{row.sub}</div>}
+                          </div>
+                          <div className={styles.guestCounter}>
+                            <button
+                              className={styles.counterBtn}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                adjustGuest(row.key, -1);
+                              }}
+                              disabled={guests[row.key] === 0}
+                            >
+                              −
+                            </button>
+                            <span className={styles.counterVal}>{guests[row.key]}</span>
+                            <button
+                              className={styles.counterBtn}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                adjustGuest(row.key, 1);
+                              }}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )
                 )}
               </div>
             </div>

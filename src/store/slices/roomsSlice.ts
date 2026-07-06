@@ -8,6 +8,7 @@ interface RoomsState {
   selectedRoom: Room | null;
   activeCategory: string;
   loading: boolean;
+  wishlistedIds: string[];
 }
 
 const initialState: RoomsState = {
@@ -16,6 +17,7 @@ const initialState: RoomsState = {
   selectedRoom: null,
   activeCategory: "all",
   loading: false,
+  wishlistedIds: [],
 };
 
 const roomsSlice = createSlice({
@@ -37,16 +39,15 @@ const roomsSlice = createSlice({
     },
     toggleWishlist(state, action: PayloadAction<string>) {
       const roomId = action.payload;
-      const updateRoom = (room: Room) =>
-        room.id === roomId ? { ...room, isWishlisted: !room.isWishlisted } : room;
-      state.rooms = state.rooms.map(updateRoom);
-      state.filteredRooms = state.filteredRooms.map(updateRoom);
-      if (state.selectedRoom?.id === roomId) {
-        state.selectedRoom = {
-          ...state.selectedRoom,
-          isWishlisted: !state.selectedRoom.isWishlisted,
-        };
+      const idx = state.wishlistedIds.indexOf(roomId);
+      if (idx === -1) {
+        state.wishlistedIds.push(roomId);
+      } else {
+        state.wishlistedIds.splice(idx, 1);
       }
+    },
+    setWishlistedIds(state, action: PayloadAction<string[]>) {
+      state.wishlistedIds = action.payload;
     },
     applyFilters(
       state,
@@ -87,6 +88,7 @@ export const {
   setActiveCategory,
   setSelectedRoom,
   toggleWishlist,
+  setWishlistedIds,
   applyFilters,
   setFilteredBySearch,
 } = roomsSlice.actions;

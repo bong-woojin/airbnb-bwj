@@ -1,29 +1,45 @@
 "use client";
 
+import { useState } from "react";
+import Image from "next/image";
 import styles from "./RoomCard.module.css";
+import { useWishlist } from "@/hooks/useWishlist";
 
 interface RoomCardProps {
+  id: string;
   image: string;
   location: string;
-  date: string;
+  date?: string;
   price: number;
   rating: number;
-  isGuestFavorite: boolean;
+  tag?: string;
+  priority?: boolean;
+  perPerson?: boolean;
 }
 
 export default function RoomCard({
+  id,
   image,
   location,
   date,
   price,
   rating,
-  isGuestFavorite,
+  tag,
+  priority,
+  perPerson,
 }: RoomCardProps) {
+  const { isWishlisted, toggle } = useWishlist(id);
+  const [loaded, setLoaded] = useState(false);
+
   return (
     <div className={styles.card}>
-      <div className={styles.tag}>
-        {isGuestFavorite && <span className={styles.tag_name}>게스트 선호</span>}
-        <button className={styles.remark}>
+      <div className={`${styles.tag} ${loaded ? styles.tagVisible : ""}`}>
+        {tag && <span className={styles.tag_name}>{tag}</span>}
+        <button
+          className={styles.remark}
+          onClick={toggle}
+          aria-label={isWishlisted ? "찜 목록에서 삭제" : "찜하기"}
+        >
           <span>
             <svg
               viewBox="0 0 32 32"
@@ -33,7 +49,7 @@ export default function RoomCard({
               focusable="false"
               style={{
                 display: "block",
-                fill: "rgba(0, 0, 0, 0.5)",
+                fill: isWishlisted ? "#FF385C" : "rgba(0, 0, 0, 0.5)",
                 height: "24px",
                 width: "24px",
                 stroke: "#fff",
@@ -47,18 +63,37 @@ export default function RoomCard({
         </button>
       </div>
       <div className={styles.imageWrap}>
-        <img src={image} alt={location} className={styles.image} />
+        <div className={`${styles.skeleton} ${loaded ? styles.skeletonHidden : ""}`} />
+        <Image
+          src={image}
+          alt={location}
+          fill
+          sizes="(max-width: 768px) 50vw, 220px"
+          className={`${styles.image} ${loaded ? styles.imageLoaded : ""}`}
+          onLoad={() => setLoaded(true)}
+          loading={priority ? "eager" : "lazy"}
+          preload={priority}
+        />
       </div>
-      <div className={styles.info}>
-        <div className={styles.location}>{location}</div>
-        <div className={styles.date}>{date}</div>
-        <div className={styles.bottom}>
-          <span className={styles.price}>총액 ₩{price.toLocaleString()}</span>
-          <span className={styles.rating}>
-            {" "}
-            · <span className={styles.star}>★</span>
-            {rating}
-          </span>
+      <div className={`${styles.info} ${perPerson ? styles.infoTwoLines : ""}`}>
+        <div className={`${styles.infoSkeleton} ${loaded ? styles.infoSkeletonHidden : ""}`}>
+          <div className={`${styles.skeletonBar} ${styles.skeletonBarLong}`} />
+          {!perPerson && <div className={`${styles.skeletonBar} ${styles.skeletonBarMedium}`} />}
+          <div className={`${styles.skeletonBar} ${styles.skeletonBarShort}`} />
+        </div>
+        <div className={`${styles.infoContent} ${loaded ? styles.infoContentVisible : ""}`}>
+          <div className={styles.location}>{location}</div>
+          {!perPerson && date && <div className={styles.date}>{date}</div>}
+          <div className={styles.bottom}>
+            <span className={styles.price}>
+              {perPerson ? `1인당 ₩${price.toLocaleString()} 부터` : `총액 ₩${price.toLocaleString()}`}
+            </span>
+            <span className={styles.rating}>
+              {" "}
+              · <span className={styles.star}>★</span>
+              {rating}
+            </span>
+          </div>
         </div>
       </div>
     </div>

@@ -9,23 +9,25 @@ interface Room {
   id: string;
   image: string;
   location: string;
-  date: string;
+  date?: string;
   price: number;
   rating: number;
-  isGuestFavorite: boolean;
+  tag?: string;
 }
 
 interface RoomSectionProps {
   title: string;
   href: string;
   rooms: Room[];
+  priority?: boolean;
+  perPerson?: boolean;
 }
 
 const GAP = 16;
 const MAX_VISIBLE = 7;
 const MIN_CARD_WIDTH = 140;
 
-export default function RoomSection({ title, href, rooms }: RoomSectionProps) {
+export default function RoomSection({ title, href, rooms, priority, perPerson }: RoomSectionProps) {
   const [offset, setOffset] = useState(0);
   const [cardWidth, setCardWidth] = useState(0);
   const [visible, setVisible] = useState(MAX_VISIBLE);
@@ -35,6 +37,12 @@ export default function RoomSection({ title, href, rooms }: RoomSectionProps) {
   const totalCards = rooms.length + 1; // 전체보기 카드 포함
   const maxOffset = Math.max(0, totalCards - visible);
   const stepSize = cardWidth + GAP;
+  // JS가 실제 픽셀 너비를 측정하기 전(SSR 및 최초 렌더)에는 카드 너비가 0이 되어
+  // 이미지가 보일 공간 자체가 사라지므로, 측정 전까지는 CSS로 대략적인 너비를 미리 잡아둔다.
+  const fallbackCardWidth = `calc((100% - ${GAP * (MAX_VISIBLE - 1)}px) / ${MAX_VISIBLE})`;
+  const cardStyle = cardWidth
+    ? { width: cardWidth, flexShrink: 0 }
+    : { width: fallbackCardWidth, flexShrink: 0 };
 
   useEffect(() => {
     const measure = () => {
@@ -85,12 +93,12 @@ export default function RoomSection({ title, href, rooms }: RoomSectionProps) {
             className={styles.grid}
             style={{ transform: `translateX(${-offset * stepSize}px)` }}
           >
-            {rooms.map((room) => (
-              <div key={room.id} style={{ width: cardWidth, flexShrink: 0 }}>
-                <RoomCard {...room} />
+            {rooms.map((room, index) => (
+              <div key={room.id} style={cardStyle}>
+                <RoomCard {...room} priority={priority && index < 3} perPerson={perPerson} />
               </div>
             ))}
-            <div style={{ width: cardWidth, flexShrink: 0 }}>
+            <div style={cardStyle}>
               <Link href={href} className={styles.viewAllCard}>
                 <div className={`${styles.imageStack} ${animKey > 0 ? styles.animate : ""}`} key={animKey}>
                   <div className={styles.stackCard1}>

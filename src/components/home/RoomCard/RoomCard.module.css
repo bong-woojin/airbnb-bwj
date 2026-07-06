@@ -16,11 +16,18 @@
 
 .tag {
   position: absolute;
+  z-index: 2;
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
   padding: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tagVisible {
+  opacity: 1;
 }
 
 .tag_name {
@@ -32,26 +39,109 @@
 }
 
 .imageWrap {
+  position: relative;
   border-radius: 20px;
   aspect-ratio: 20 / 19;
   overflow: hidden;
 }
 
 .image {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.imageLoaded {
+  opacity: 1;
+}
+
+.skeleton {
+  position: absolute;
+  inset: 0;
+  background-color: #d9d9d9;
+  background-image: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.7) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  transition: opacity 0.3s ease;
+}
+
+.skeletonHidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .info {
+  position: relative;
+  min-height: 52px;
+}
+
+.infoTwoLines {
+  min-height: 34px;
+}
+
+.infoSkeleton {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 2px;
+  transition: opacity 0.3s ease;
+}
+
+.infoSkeletonHidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.skeletonBar {
+  height: 11px;
+  border-radius: 4px;
+  background-color: #d9d9d9;
+  background-image: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.7) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeletonBarShort {
+  width: 45%;
+}
+
+.skeletonBarMedium {
+  width: 35%;
+}
+
+.skeletonBarLong {
+  width: 65%;
+}
+
+.infoContent {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.infoContentVisible {
+  opacity: 1;
 }
 
 .location {
   font-size: 13px;
   line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .date {
