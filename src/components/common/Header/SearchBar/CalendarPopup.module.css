@@ -1,0 +1,263 @@
+/* Date popup tabs */
+.dateTabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.dateTabBtn {
+  padding: 8px 20px;
+  border: 1.5px solid #ddd;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    color 0.2s;
+}
+
+.dateTabBtn:hover {
+  border-color: #aaa;
+}
+
+.dateTabBtnActive {
+  border-color: #222;
+  background: #222;
+  color: #fff;
+}
+
+/* Calendar */
+.calWrapper {
+  display: flex;
+  gap: 32px;
+}
+
+.calMonth {
+  flex: 1;
+}
+
+.calMonthHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.calMonthName {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+}
+
+.calNavBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f2f2f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.calNavBtn:hover:not(:disabled) {
+  background: #ebebeb;
+}
+
+.calNavBtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.calNavSpacer {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.calWeekday {
+  text-align: center;
+  font-size: 12px;
+  color: #717171;
+  padding: 4px 0;
+  font-weight: 500;
+}
+
+.calDay {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s;
+  color: #222;
+}
+
+.calDay:hover:not(:disabled) {
+  background: #ebebeb;
+}
+
+.calDayPast {
+  color: #ccc;
+  cursor: default;
+}
+
+.calDaySelected {
+  background: #222 !important;
+  color: #fff !important;
+  border-radius: 50%;
+}
+
+.calDayRange {
+  background: #f2f2f2;
+  border-radius: 0;
+}
+
+/* Date flexibility row */
+.dateFlexRow {
+  display: flex;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.dateFlexBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 24px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #222;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    color 0.2s;
+}
+
+.dateFlexBtn:hover {
+  border-color: #aaa;
+}
+
+.dateFlexBtnActive {
+  border-color: #222;
+  background: #222;
+  color: #fff;
+}
+
+/* Flexible schedule */
+.flexWrapper {
+  padding-top: 4px;
+}
+
+.flexSubTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.flexDurations {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  justify-content: center;
+}
+
+.flexDurBtn {
+  padding: 8px 20px;
+  border: 1.5px solid #ddd;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.flexDurBtn:hover {
+  border-color: #aaa;
+}
+
+.flexDurBtnActive {
+  border-color: #222;
+  background: #f7f7f7;
+}
+
+.flexSliderWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.flexSliderOuter {
+  flex: 1;
+  overflow: hidden;
+}
+
+.flexSliderTrack {
+  display: grid;
+  grid-template-columns: repeat(12, calc((100% - 5 * 8px) / 6));
+  gap: 8px;
+  width: 100%;
+  transition: transform 0.35s ease;
+}
+
+.flexNavBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f2f2f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.flexNavBtn:hover {
+  background: #ebebeb;
+}
+
+.flexMonthCard {
+  height: 80px;
+  border: 1.5px solid #ddd;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: #222;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.flexMonthCard:hover {
+  border-color: #aaa;
+}
+
+.flexMonthCardActive {
+  border-color: #222;
+  background: #f7f7f7;
+}

@@ -159,3 +159,47 @@
   font-weight: 600;
   color: #222;
 }
+
+/* 1128 미만 */
+@media (max-width: 1127px) {
+    .header{
+        padding:0 20px;
+    }
+
+    .gridOuter{
+        padding:0 20px;
+    }
+
+}
+
+/* JS가 실제 컨테이너 폭을 측정하기 전(SSR 및 최초 렌더)에 쓰는 카드 너비.
+   Header.module.css와 동일한 브레이크포인트(1439/1127/949/743)에서
+   RoomSection의 VISIBLE_BREAKPOINTS(7/6/5/4/2.1)와 같은 값으로 미리 잡아둬서
+   측정 후 카드 크기가 튀어 보이지 않게 한다. */
+.cardFallbackWidth {
+  width: calc((100% - 96px) / 7);
+}
+
+@media (max-width: 1439px) {
+  .cardFallbackWidth {
+    width: calc((100% - 80px) / 6);
+  }
+}
+
+@media (max-width: 1127px) {
+  .cardFallbackWidth {
+    width: calc((100% - 64px) / 5);
+  }
+}
+
+@media (max-width: 949px) {
+  .cardFallbackWidth {
+    width: calc((100% - 48px) / 4);
+  }
+}
+
+@media (max-width: 743px) {
+  .cardFallbackWidth {
+    width: calc((100% - 32px) / 2.1);
+  }
+}

@@ -1,0 +1,422 @@
+/* 컴팩트 검색 — .inner와 동일한 max-width/padding으로 감싸서, header의 직접 자식이 되어도
+   기존과 같은 위치(.inner 컬럼 중앙)에 오도록 한다. */
+.compactSearchOuter {
+  position: absolute;
+  inset: 0;
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.compactSearch {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 40px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s cubic-bezier(0.2, 0, 0, 1);
+  white-space: nowrap;
+}
+
+.compactSearchVisible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.compactItem {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+}
+
+.compactItemLight {
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #717171;
+}
+
+.compactDivider {
+  width: 1px;
+  height: 20px;
+  background: #ddd;
+  flex-shrink: 0;
+}
+
+.compactBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ff385c;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 6px 6px 4px;
+  flex-shrink: 0;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+
+.compactBtn:hover {
+  background: #e61e4d;
+  transform: scale(1.05);
+}
+
+/* 확장 검색바 */
+.expandedSearch {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: visible;
+  transition:
+    max-height 0.35s cubic-bezier(0.2, 0, 0, 1),
+    opacity 0.2s,
+    padding 0.3s;
+  margin-top: 5px;
+    padding-bottom:30px;
+}
+
+.expandedSearchHidden {
+  max-height: 0;
+  opacity: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+}
+
+.searchBar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 40px;
+  box-shadow:
+    0px 0px 0px 1px rgba(0, 0, 0, 0.02),
+    0px 8px 24px 0px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 850px;
+  transition:
+    background 0.25s,
+    border-color 0.25s,
+    box-shadow 0.25s;
+}
+
+.searchBarActive {
+  background: #ebebeb;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.searchBarActive .searchDivider {
+  opacity: 0;
+}
+
+.searchBarActive .searchSection:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.searchSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 15px 32px;
+  cursor: pointer;
+  border-radius: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.searchSection:hover {
+  background: #ebebeb;
+}
+
+.searchLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: #222222;
+  line-height: 1.4;
+}
+
+.searchInput {
+  font-size: 14px;
+  color: #222222;
+  width: 100%;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: #6a6a6a;
+}
+
+.searchInputFilled {
+  font-weight: 600;
+  color: #222;
+}
+
+.locationSelected {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.locationSelectedText {
+  font-size: 14px;
+  color: #222;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.locationClearBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #717171;
+  transition: color 0.15s;
+  padding: 2px;
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+}
+
+.locationClearBtn:hover {
+  color: #222;
+}
+
+.searchDivider {
+  width: 1px;
+  height: 28px;
+  background: #ddd;
+  flex-shrink: 0;
+}
+
+.searchSection:hover + .searchDivider {
+  opacity: 0;
+}
+
+.searchDivider:has(+ .searchSection:hover) {
+  opacity: 0;
+}
+
+.searchBtn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ff385c;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+
+.searchBtn:hover {
+  background: #e61e4d;
+  transform: translateY(-50%) scale(1.04);
+}
+
+/* Active search section — pill provides the white, section stays transparent */
+.searchSectionActive {
+  background: transparent !important;
+}
+
+.searchSectionActive:hover {
+  background: transparent !important;
+}
+
+/* Sliding pill behind sections */
+.sectionPill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: #fff;
+  border-radius: 40px;
+  z-index: 0;
+  pointer-events: none;
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.sectionPillTransition {
+  transition:
+    left 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    width 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Popup base */
+@keyframes popupIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes popupContentFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes popupContentFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 처음 열릴 때 위에서 페이드업 */
+.popupFirstOpen {
+  animation: popupIn 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* 팝업 내부 콘텐츠 슬라이드 (섹션 전환 시) */
+.popupContentFromRight {
+  animation: popupContentFromRight 0.18s ease both;
+}
+
+.popupContentFromLeft {
+  animation: popupContentFromLeft 0.18s ease both;
+}
+
+.popup {
+  position: absolute;
+  top: calc(100% + 10px);
+  background: #fff;
+  border-radius: 32px;
+  box-shadow:
+    0 2px 16px rgba(0, 0, 0, 0.1),
+    0 8px 32px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 200;
+  scrollbar-width: thin;
+  scrollbar-color: #ddd transparent;
+  /* 팝업 이동 트랜지션 */
+  transition:
+    left 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    width 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.popup::-webkit-scrollbar {
+  width: 4px;
+}
+
+.popup::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.popup::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 2px;
+}
+
+/* ============================================================
+   반응형 브레이크포인트
+   ============================================================ */
+
+/* 1440 미만 */
+@media (max-width: 1439px) {
+  .searchBar {
+    max-width: 760px;
+  }
+
+  .searchSection {
+    padding: 15px 24px;
+  }
+}
+
+/* 1128 미만 */
+@media (max-width: 1127px) {
+  .expandedSearch {
+    padding: 0 16px 28px;
+  }
+
+  .searchSection {
+    padding: 12px 18px;
+  }
+}
+
+/* 950 미만 */
+@media (max-width: 949px) {
+  .compactSearchOuter {
+    display: none;
+  }
+
+  .expandedSearch {
+    padding: 0 24px 36px;
+    margin-top: 0;
+  }
+
+  .searchSection {
+    padding: 15px 32px;
+  }
+
+  .searchLabel {
+    font-size: 12px;
+  }
+
+  .searchInput {
+    font-size: 14px;
+  }
+}
+
+/* 744 미만 */
+@media (max-width: 743px) {
+  .expandedSearch {
+    padding: 0 8px 16px;
+    margin-top: 0;
+  }
+
+  .searchBar {
+    border-radius: 16px;
+  }
+
+  .searchSection {
+    padding: 8px 12px;
+  }
+
+  .searchDivider {
+    height: 20px;
+  }
+
+  .searchBtn {
+    width: 36px;
+    height: 36px;
+  }
+}

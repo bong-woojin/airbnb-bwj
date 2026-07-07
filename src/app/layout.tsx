@@ -3,7 +3,7 @@ import Providers from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Airbnb Clone | 어디서든 편안한 여행을",
+  title: "Airbnb Clone",
   description: "에어비앤비 클론 프로젝트 - 전국 최고의 숙소를 찾아보세요",
 };
 

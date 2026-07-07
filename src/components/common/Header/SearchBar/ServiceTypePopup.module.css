@@ -1,0 +1,46 @@
+.serviceTypeGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 8px;
+}
+
+.serviceTypeItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid #ddd;
+  border-radius: 32px;
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.serviceTypeItem:hover {
+  border-color: #222;
+}
+
+.serviceTypeItemActive {
+  border-color: #222;
+  border-width: 2px;
+  background: #f7f7f7;
+}
+
+.serviceTypeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #222;
+}
+
+.serviceTypeLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

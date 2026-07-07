@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import styles from "./RoomCard.module.css";
 import { useWishlist } from "@/hooks/useWishlist";
 
@@ -13,6 +14,7 @@ interface RoomCardProps {
   price: number;
   rating: number;
   tag?: string;
+  href: string;
   priority?: boolean;
   perPerson?: boolean;
 }
@@ -25,6 +27,7 @@ export default function RoomCard({
   price,
   rating,
   tag,
+  href,
   priority,
   perPerson,
 }: RoomCardProps) {
@@ -32,7 +35,7 @@ export default function RoomCard({
   const [loaded, setLoaded] = useState(false);
 
   return (
-    <div className={styles.card}>
+    <Link href={href} className={styles.card}>
       <div className={`${styles.tag} ${loaded ? styles.tagVisible : ""}`}>
         {tag && <span className={styles.tag_name}>{tag}</span>}
         <button
@@ -96,6 +99,6 @@ export default function RoomCard({
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
