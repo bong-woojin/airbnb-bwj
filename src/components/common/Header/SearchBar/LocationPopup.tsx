@@ -2,17 +2,18 @@
 
 import styles from "./LocationPopup.module.css";
 
+// title은 검색 필터(roomsByCity 키)와 그대로 매칭되므로 도시명을 정확히 유지한다.
 const DESTINATIONS = [
-  { icon: "🗺️", title: "근처 체험 찾기", desc: "가까운 곳에서 즐길 수 있는 체험을 찾아보세요" },
-  { icon: "🏖️", title: "해변 여행", desc: "파도 소리와 함께하는 완벽한 휴가" },
-  { icon: "🏔️", title: "산악 여행", desc: "자연 속에서 즐기는 트레킹과 등산" },
-  { icon: "🏙️", title: "도시 탐방", desc: "다양한 문화와 음식을 경험하는 도시 여행" },
-  { icon: "🌿", title: "농촌 체험", desc: "자연과 함께하는 힐링 농촌 여행" },
-  { icon: "🏯", title: "역사 문화 투어", desc: "한국의 역사와 전통을 느껴보세요" },
-  { icon: "🎿", title: "스키 & 스노우보드", desc: "설경 속에서 즐기는 겨울 스포츠" },
-  { icon: "🌊", title: "수상 스포츠", desc: "서핑, 스쿠버다이빙 등 수중 액티비티" },
-  { icon: "🍜", title: "음식 투어", desc: "현지의 맛을 탐험하는 미식 여행" },
-  { icon: "🛕", title: "사찰 & 명상 여행", desc: "고요한 사찰에서 마음의 안정을 찾아보세요" },
+  { icon: "🌇", title: "서울", desc: "전통과 트렌드가 공존하는 도시 여행" },
+  { icon: "🌊", title: "부산", desc: "해운대와 광안리, 바다의 도시" },
+  { icon: "🏝️", title: "제주", desc: "자연이 살아있는 힐링 섬 여행" },
+  { icon: "⛰️", title: "강릉", desc: "동해 바다와 커피의 도시" },
+  { icon: "🌅", title: "여수", desc: "밤바다가 아름다운 남해 여행" },
+  { icon: "🏯", title: "경주", desc: "천년 고도에서 즐기는 역사 여행" },
+  { icon: "🍜", title: "전주", desc: "한옥마을과 미식의 고장" },
+  { icon: "🎿", title: "속초", desc: "설악산과 바다를 한번에" },
+  { icon: "🌉", title: "인천", desc: "공항과 가까운 근교 여행" },
+  { icon: "🌆", title: "대구", desc: "골목 투어와 야시장의 매력" },
 ];
 
 interface LocationPopupProps {

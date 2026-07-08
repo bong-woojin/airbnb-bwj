@@ -1,0 +1,92 @@
+/* 달력 한 달 렌더링(요일 헤더 + 날짜 그리드 + 월 네비게이션) 공용 스타일 */
+.calMonth {
+  flex: 1;
+}
+
+.calMonthHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.calMonthName {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+}
+
+.calNavBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f2f2f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.calNavBtn:hover:not(:disabled) {
+  background: #ebebeb;
+}
+
+.calNavBtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.calNavSpacer {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.calWeekday {
+  text-align: center;
+  font-size: 12px;
+  color: #717171;
+  padding: 4px 0;
+  font-weight: 500;
+}
+
+.calDay {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s;
+  color: #222;
+}
+
+.calDay:hover:not(:disabled) {
+  background: #ebebeb;
+}
+
+.calDayPast {
+  color: #ccc;
+  cursor: default;
+}
+
+.calDaySelected {
+  background: #222 !important;
+  color: #fff !important;
+  border-radius: 50%;
+}
+
+.calDayRange {
+  background: #f2f2f2;
+  border-radius: 0;
+}

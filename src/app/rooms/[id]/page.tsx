@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import PageHeader from "@/components/layout/PageHeader";
 import ItemDetail from "@/components/detail/ItemDetail";
+import { ROOM_OVERRIDES } from "@/components/detail/roomContent";
 import { allRooms } from "@/data/rooms";
 
 interface RoomDetailPageProps {
@@ -15,7 +16,7 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
     notFound();
   }
 
-  const subtitle = `${room.location} · 침실4 · 욕실2 · 최대9인 · 한옥 숙소`;
+  const subtitle = ROOM_OVERRIDES[id]?.subtitle ?? `${room.location} · 침실4 · 욕실2 · 최대9인 · 한옥 숙소`;
 
   return (
     <PageHeader initialTab={0}>

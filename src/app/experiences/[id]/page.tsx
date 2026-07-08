@@ -17,7 +17,14 @@ export default async function ExperienceDetailPage({ params }: ExperienceDetailP
 
   return (
     <PageHeader initialTab={1}>
-      <ItemDetail item={experience} backHref="/" backLabel="홈으로" categoryLabel="체험" perPerson />
+      <ItemDetail
+        item={experience}
+        backHref="/experiences"
+        backLabel="체험 목록으로"
+        categoryLabel="체험"
+        subtitle={experience.location}
+        perPerson
+      />
     </PageHeader>
   );
 }

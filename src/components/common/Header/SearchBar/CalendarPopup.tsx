@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import styles from "./CalendarPopup.module.css";
-import CalendarMonth from "./CalendarMonth";
+import CalendarMonth from "@/components/common/CalendarMonth";
 
 type DateTab = "specific" | "flexible";
 type FlexDuration = "weekend" | "week" | "month" | null;
 
 const FLEX_MONTHS = Array.from({ length: 12 }, (_, i) => new Date(2026, 5 + i, 1));
-const CAL_MAX_OFFSET = 23;
+// 목데이터 날짜가 이번달~다음달 범위뿐이라 캘린더 탐색도 그만큼만 허용한다.
+const CAL_MAX_OFFSET = 0;
 const DATE_FLEX_OPTIONS = [
   { label: "정확한 날짜", value: 0 },
   { label: "1일", value: 1 },
@@ -23,7 +24,11 @@ function formatDate(d: Date) {
 }
 
 interface CalendarPopupProps {
-  onChange: (placeholder: string, hasSelection: boolean) => void;
+  onChange: (
+    placeholder: string,
+    hasSelection: boolean,
+    range: { start: Date | null; end: Date | null }
+  ) => void;
 }
 
 export default function CalendarPopup({ onChange }: CalendarPopupProps) {
@@ -50,9 +55,9 @@ export default function CalendarPopup({ onChange }: CalendarPopupProps) {
     : "날짜 추가";
 
   useEffect(() => {
-    onChange(placeholder, !!selectedStart);
+    onChange(placeholder, !!selectedStart, { start: selectedStart, end: selectedEnd });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [placeholder, selectedStart]);
+  }, [placeholder, selectedStart, selectedEnd]);
 
   function handleDayClick(d: Date) {
     if (!selectedStart || selectedEnd) {

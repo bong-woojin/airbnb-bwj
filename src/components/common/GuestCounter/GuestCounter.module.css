@@ -59,3 +59,45 @@
   text-align: center;
   color: #222;
 }
+
+/* BookingCard 등 좁은 영역용 컴팩트 변형 */
+.compact.guestRow {
+  padding: 12px 0;
+}
+
+.compact .guestLabel {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.compact .guestCounter {
+  gap: 12px;
+}
+
+.compact .counterBtn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #b0b0b0;
+  font-size: 14px;
+  color: #717171;
+  transition:
+    border-color 0.2s,
+    color 0.2s;
+}
+
+.compact .counterBtn:hover:not(:disabled) {
+  border-color: #222;
+  color: #222;
+}
+
+.compact .counterBtn:disabled {
+  opacity: 0.3;
+  color: #717171;
+  border-color: #b0b0b0;
+}
+
+.compact .counterVal {
+  min-width: 16px;
+  font-size: 14px;
+  font-weight: 400;
+}

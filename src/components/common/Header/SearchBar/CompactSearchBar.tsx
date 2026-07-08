@@ -3,22 +3,60 @@
 import { forwardRef } from "react";
 import styles from "./SearchBar.module.css";
 
+export interface SearchLabels {
+  location?: string;
+  date?: string;
+  guests?: string;
+}
+
+export type CompactSection = "location" | "date" | "guest";
+
+// 헤더 탭의 숙소 아이콘과 같은 이미지
+const HOUSE_ICON =
+  "https://a0.muscache.com/im/pictures/airbnb-platform-assets/AirbnbPlatformAssets-search-bar-icons/original/4aae4ed7-5939-4e76-b100-e69440ebeae4.png?im_w=240";
+
 interface CompactSearchBarProps {
   visible: boolean;
+  labels?: SearchLabels;
+  onExpand?: (section?: CompactSection) => void;
 }
 
 const CompactSearchBar = forwardRef<HTMLDivElement, CompactSearchBarProps>(function CompactSearchBar(
-  { visible },
+  { visible, labels, onExpand },
   ref
 ) {
+  // 세그먼트 클릭 시 해당 섹션이 바로 열리도록 섹션명을 함께 전달
+  const sectionClick = (section: CompactSection) =>
+    onExpand
+      ? (e: React.MouseEvent) => {
+          e.stopPropagation();
+          onExpand(section);
+        }
+      : undefined;
+
   return (
     <div className={styles.compactSearchOuter}>
-      <div className={`${styles.compactSearch} ${visible ? styles.compactSearchVisible : ""}`} ref={ref}>
-        <span className={styles.compactItem}>어디든지</span>
+      <div
+        className={`${styles.compactSearch} ${visible ? styles.compactSearchVisible : ""}`}
+        ref={ref}
+        onClick={() => onExpand?.()}
+        style={onExpand ? { cursor: "pointer" } : undefined}
+      >
+        <img src={HOUSE_ICON} alt="" className={styles.compactIcon} />
+        <span className={styles.compactItem} onClick={sectionClick("location")}>
+          {labels?.location ?? "어디든지"}
+        </span>
         <span className={styles.compactDivider} />
-        <span className={styles.compactItem}>언제든지</span>
+        <span className={styles.compactItem} onClick={sectionClick("date")}>
+          {labels?.date ?? "언제든지"}
+        </span>
         <span className={styles.compactDivider} />
-        <span className={styles.compactItemLight}>게스트 추가</span>
+        <span
+          className={labels?.guests ? styles.compactItem : styles.compactItemLight}
+          onClick={sectionClick("guest")}
+        >
+          {labels?.guests ?? "게스트 추가"}
+        </span>
         <button className={styles.compactBtn}>
           <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "./CalendarPopup.module.css";
+import styles from "./CalendarMonth.module.css";
 
 const KO_DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 

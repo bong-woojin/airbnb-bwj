@@ -1,43 +1,55 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { formatYMD } from "@/lib/dates";
 import styles from "./SearchBar.module.css";
 import LocationPopup from "./LocationPopup";
 import CalendarPopup from "./CalendarPopup";
 import GuestPopup from "./GuestPopup";
 import ServiceTypePopup from "./ServiceTypePopup";
-import CompactSearchBar from "./CompactSearchBar";
-import { type ActiveSection, runFlip, sectionToIdx } from "./flip";
-
-interface PillStyle {
-  left: number;
-  width: number;
-}
+import CompactSearchBar, { type SearchLabels } from "./CompactSearchBar";
+import { sectionToIdx } from "./flip";
+import { useSectionPopup } from "./useSectionPopup";
+import { useSearchTransition } from "./useSearchTransition";
 
 interface SearchBarProps {
   activeTab: number;
   onScrolledChange?: (scrolled: boolean) => void;
   forceScrolled?: boolean;
+  searchLabels?: SearchLabels;
 }
 
-export default function SearchBar({ activeTab, onScrolledChange, forceScrolled = false }: SearchBarProps) {
-  const [scrolled, setScrolled] = useState(forceScrolled);
-  const [activeSection, setActiveSection] = useState<ActiveSection>(null);
-  const [prevSectionIdx, setPrevSectionIdx] = useState(-1);
-  const [pillStyle, setPillStyle] = useState<PillStyle | null>(null);
-  const [pillTransition, setPillTransition] = useState(false);
+export default function SearchBar({ activeTab, onScrolledChange, forceScrolled = false, searchLabels }: SearchBarProps) {
+  // 검색 조건 상태
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedServiceType, setSelectedServiceType] = useState("");
   const [datePlaceholder, setDatePlaceholder] = useState("날짜 추가");
   const [hasDateSelection, setHasDateSelection] = useState(false);
+  const [dateRange, setDateRange] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null });
   const [totalGuests, setTotalGuests] = useState(0);
 
-  const isTransitioning = useRef(false);
-  const scrolledRef = useRef(false);
+  const router = useRouter();
   const searchBarRef = useRef<HTMLDivElement>(null);
-  const compactSearchRef = useRef<HTMLDivElement>(null);
-  const searchFlipSourceRect = useRef<DOMRect | null>(null);
-  const sectionEls = useRef<(HTMLDivElement | null)[]>([null, null, null]);
+
+  const {
+    activeSection,
+    prevSectionIdx,
+    pillStyle,
+    pillTransition,
+    sectionEls,
+    openSection,
+    closeSection,
+  } = useSectionPopup(searchBarRef);
+
+  const { scrolled, compactSearchRef, expandFromCompact, collapseToCompact } = useSearchTransition({
+    forceScrolled,
+    onScrolledChange,
+    searchBarRef,
+    activeSection,
+    openSection,
+    closeSection,
+  });
 
   const sectionIdx = sectionToIdx(activeSection);
 
@@ -62,79 +74,21 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
     return {};
   }
 
-  function openSection(section: ActiveSection) {
-    const idx = sectionToIdx(section);
-    const el = sectionEls.current[idx];
-    const bar = searchBarRef.current;
-    if (el && bar) {
-      const eRect = el.getBoundingClientRect();
-      const bRect = bar.getBoundingClientRect();
-      const hasTransition = activeSection !== null;
-      setPillStyle({ left: eRect.left - bRect.left, width: eRect.width });
-      setPillTransition(hasTransition);
+  // 검색: 선택한 여행지/날짜를 URL 파라미터로 넘겨 숙소 목록 페이지로 이동
+  function handleSearch() {
+    const params = new URLSearchParams();
+    if (selectedLocation) params.set("location", selectedLocation);
+    if (dateRange.start && dateRange.end) {
+      params.set("checkin", formatYMD(dateRange.start));
+      params.set("checkout", formatYMD(dateRange.end));
     }
-    setPrevSectionIdx(sectionToIdx(activeSection));
-    setActiveSection(section);
+    if (totalGuests > 0) params.set("guests", String(totalGuests));
+    const query = params.toString();
+    closeSection();
+    router.push(query ? `/rooms?${query}` : "/rooms");
+    // 목록 페이지에서 재검색한 경우: 같은 라우트라 컴포넌트가 유지되므로 직접 접는다
+    if (forceScrolled) collapseToCompact();
   }
-
-  function closeSection() {
-    setActiveSection(null);
-    setPillStyle(null);
-    setPillTransition(false);
-    setPrevSectionIdx(-1);
-  }
-
-  useEffect(() => {
-    if (forceScrolled) {
-      onScrolledChange?.(true);
-      return;
-    }
-    const onScroll = () => {
-      if (isTransitioning.current) return;
-      if (!scrolledRef.current && window.scrollY > 80) {
-        isTransitioning.current = true;
-        scrolledRef.current = true;
-        searchFlipSourceRect.current = searchBarRef.current?.getBoundingClientRect() ?? null;
-        setScrolled(true);
-        onScrolledChange?.(true);
-        setTimeout(() => {
-          isTransitioning.current = false;
-        }, 400);
-      } else if (scrolledRef.current && window.scrollY < 40) {
-        isTransitioning.current = true;
-        scrolledRef.current = false;
-        searchFlipSourceRect.current = compactSearchRef.current?.getBoundingClientRect() ?? null;
-        setScrolled(false);
-        onScrolledChange?.(false);
-        setTimeout(() => {
-          isTransitioning.current = false;
-        }, 400);
-      }
-      closeSection();
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [forceScrolled]);
-
-  useLayoutEffect(() => {
-    if (scrolled) {
-      runFlip(compactSearchRef.current, searchFlipSourceRect.current,"");
-    } else {
-      runFlip(searchBarRef.current, searchFlipSourceRect.current, "");
-    }
-  }, [scrolled]);
-
-  useEffect(() => {
-    if (!activeSection) return;
-    const onMouseDown = (e: MouseEvent) => {
-      if (searchBarRef.current && !searchBarRef.current.contains(e.target as Node)) {
-        closeSection();
-      }
-    };
-    document.addEventListener("mousedown", onMouseDown);
-    return () => document.removeEventListener("mousedown", onMouseDown);
-  }, [activeSection]);
 
   const guestPlaceholder =
     activeTab === 2
@@ -147,7 +101,15 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
 
   return (
     <>
-      <CompactSearchBar visible={scrolled} ref={compactSearchRef} />
+      {/* 목록 페이지에서 검색바 확장 시 본문 위를 덮는 반투명 오버레이 */}
+      {forceScrolled && !scrolled && <div className={styles.searchOverlay} />}
+
+      <CompactSearchBar
+        visible={scrolled}
+        labels={searchLabels}
+        onExpand={forceScrolled ? expandFromCompact : undefined}
+        ref={compactSearchRef}
+      />
 
       {/* 확장 검색바 */}
       <div className={`${styles.expandedSearch} ${scrolled ? styles.expandedSearchHidden : ""}`}>
@@ -222,7 +184,7 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
             <input className={styles.searchInput} placeholder={guestPlaceholder} readOnly />
           </div>
 
-          <button className={styles.searchBtn}>
+          <button className={styles.searchBtn} onClick={handleSearch} aria-label="검색">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 32 32"
@@ -251,9 +213,10 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
 
                 {activeSection === "date" && (
                   <CalendarPopup
-                    onChange={(text, hasSelection) => {
+                    onChange={(text, hasSelection, range) => {
                       setDatePlaceholder(text);
                       setHasDateSelection(hasSelection);
+                      setDateRange(range);
                     }}
                   />
                 )}

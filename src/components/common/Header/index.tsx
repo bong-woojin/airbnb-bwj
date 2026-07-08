@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import styles from "./Header.module.css";
 import SearchBar from "./SearchBar";
+import type { SearchLabels } from "./SearchBar/CompactSearchBar";
 
 const TABS = [
   {
@@ -33,9 +35,19 @@ interface HeaderProps {
   onTabChange: (index: number) => void;
   onHeightChange?: (height: number) => void;
   forceScrolled?: boolean;
+  searchLabels?: SearchLabels;
+  // 목록 페이지에서 압축 바 → 확장 검색바로 열리고 닫힐 때 알림 (오버레이 모드 제어용)
+  onSearchOpenChange?: (open: boolean) => void;
 }
 
-export default function Header({ activeTab, onTabChange, onHeightChange, forceScrolled = false }: HeaderProps) {
+export default function Header({
+  activeTab,
+  onTabChange,
+  onHeightChange,
+  forceScrolled = false,
+  searchLabels,
+  onSearchOpenChange,
+}: HeaderProps) {
   const [scrolled, setScrolled] = useState(forceScrolled);
 
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
@@ -81,7 +93,7 @@ export default function Header({ activeTab, onTabChange, onHeightChange, forceSc
     <header ref={headerRef} className={`${styles.wrapper} ${scrolled ? styles.scrolled : ""}`}>
       <div className={styles.inner}>
         {/* Logo */}
-        <div className={styles.logo}>
+        <Link href="/" className={styles.logo} aria-label="홈으로">
           <svg
             className={styles.logoFull}
             width="102"
@@ -104,7 +116,7 @@ export default function Header({ activeTab, onTabChange, onHeightChange, forceSc
               fill="#ff385c"
             />
           </svg>
-        </div>
+        </Link>
 
         {/* 탭 */}
         <div className={styles.tabs}>
@@ -183,7 +195,15 @@ export default function Header({ activeTab, onTabChange, onHeightChange, forceSc
         </nav>
       </div>
 
-      <SearchBar activeTab={activeTab} onScrolledChange={setScrolled} forceScrolled={forceScrolled} />
+      <SearchBar
+        activeTab={activeTab}
+        onScrolledChange={(s) => {
+          setScrolled(s);
+          onSearchOpenChange?.(!s);
+        }}
+        forceScrolled={forceScrolled}
+        searchLabels={searchLabels}
+      />
     </header>
   );
 }

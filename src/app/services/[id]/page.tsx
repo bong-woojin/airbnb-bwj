@@ -17,7 +17,14 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
 
   return (
     <PageHeader initialTab={2}>
-      <ItemDetail item={service} backHref="/" backLabel="홈으로" categoryLabel="서비스" perPerson />
+      <ItemDetail
+        item={service}
+        backHref="/services"
+        backLabel="서비스 목록으로"
+        categoryLabel="서비스"
+        subtitle={service.location}
+        perPerson
+      />
     </PageHeader>
   );
 }
