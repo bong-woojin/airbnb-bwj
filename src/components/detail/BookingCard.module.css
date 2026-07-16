@@ -342,6 +342,123 @@
   text-align: center;
 }
 
+/* 예약 요청 확인 모달 내용 */
+.confirmBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.confirmList {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.confirmRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 14px 16px;
+}
+
+.confirmRow + .confirmRow {
+  border-top: 1px solid #ddd;
+}
+
+.confirmRow dt {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  flex-shrink: 0;
+}
+
+.confirmRow dd {
+  font-size: 14px;
+  color: #222;
+  text-align: right;
+}
+
+.confirmUnit {
+  font-size: 12px;
+  color: #717171;
+}
+
+.confirmNote {
+  font-size: 12px;
+  color: #717171;
+}
+
+.confirmBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  background: #ff385c;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.confirmBtn:hover {
+  background: #e61e4d;
+}
+
+.confirmBtn:disabled {
+  background: #dddddd;
+  color: #717171;
+  cursor: not-allowed;
+}
+
+.confirmGhostBtn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  background: none;
+  border: 1px solid #222;
+  color: #222;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.confirmSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-top-color: #717171;
+  border-radius: 50%;
+  animation: confirmSpin 0.7s linear infinite;
+}
+
+@keyframes confirmSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.confirmSuccessMsg {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #222;
+}
+
+.confirmSuccessMsg strong {
+  font-weight: 700;
+}
+
+.confirmErrorMsg {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #c13515;
+}
+
 @media (max-width: 743px) {
   .calendarPopup {
     width: calc(100vw - 32px);

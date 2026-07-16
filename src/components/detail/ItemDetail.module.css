@@ -626,3 +626,12 @@
     aspect-ratio: 4 / 3;
   }
 }
+
+/* 미디어 쿼리의 .modalPanel(모바일 전체화면)보다 뒤에 선언해 compact가 항상 이기게 한다 */
+.modalPanelCompact {
+  width: 420px;
+  height: auto;
+  max-width: 92vw;
+  max-height: 90vh;
+  border-radius: 16px;
+}

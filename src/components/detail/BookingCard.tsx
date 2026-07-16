@@ -2,15 +2,22 @@
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./BookingCard.module.css";
+import Modal from "./Modal";
 import CalendarMonth from "@/components/common/CalendarMonth";
 import GuestCounter, { type GuestKey, type Guests } from "@/components/common/GuestCounter";
-import { getToday, parseCardDateRange } from "@/lib/dates";
+import { addDays, formatYMD, getToday, parseCardDateRange, parseYMD } from "@/lib/dates";
 
 interface BookingCardProps {
+  // 예약 API 요청에 담을 상품 id
+  itemId: string;
   price: number;
   dateRangeLabel?: string;
   // 체험/서비스: 1인당 가격 + 단일 날짜 선택 모드
   perPerson?: boolean;
+  // 검색에서 이어받은 초기값("YYYY-MM-DD", 성인 수) — 있으면 숙소 기본 기간보다 우선
+  initialCheckin?: string;
+  initialCheckout?: string;
+  initialGuests?: number;
 }
 
 // 목데이터 날짜가 이번달~다음달 범위뿐이라 캘린더 탐색도 그만큼만 허용한다.
@@ -30,22 +37,41 @@ function formatDateDots(d: Date) {
   return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
 }
 
-export default function BookingCard({ price, dateRangeLabel, perPerson = false }: BookingCardProps) {
+// 예약 모달의 단계: 내용 확인 → 요청 중 → 성공/실패. null이면 모달 닫힘.
+type ReserveStep = "review" | "submitting" | "success" | "error";
+
+export default function BookingCard({
+  itemId,
+  price,
+  dateRangeLabel,
+  perPerson = false,
+  initialCheckin,
+  initialCheckout,
+  initialGuests,
+}: BookingCardProps) {
   const today = getToday();
-  const initialRange = parseCardDateRange(dateRangeLabel, today);
+  // 초기 날짜: 검색한 체크인~체크아웃이 있으면 그대로, 없으면 숙소의 가능 기간 라벨로
+  const searchStart = parseYMD(initialCheckin);
+  const searchEnd = parseYMD(initialCheckout);
+  const cardRange = parseCardDateRange(dateRangeLabel, today);
+  const initialStart = (searchStart && searchEnd ? searchStart : cardRange?.start) ?? null;
+  const initialEnd = (searchStart && searchEnd ? searchEnd : cardRange?.end) ?? null;
 
   const [activePopup, setActivePopup] = useState<"date" | "guests" | null>(null);
-  const [selectedStart, setSelectedStart] = useState<Date | null>(initialRange?.start ?? null);
-  const [selectedEnd, setSelectedEnd] = useState<Date | null>(initialRange?.end ?? null);
+  const [selectedStart, setSelectedStart] = useState<Date | null>(initialStart);
+  const [selectedEnd, setSelectedEnd] = useState<Date | null>(initialEnd);
   const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
   const [calOffset, setCalOffset] = useState(() => {
-    if (!initialRange) return 0;
+    if (!initialStart) return 0;
     const offset =
-      (initialRange.start.getFullYear() - today.getFullYear()) * 12 +
-      (initialRange.start.getMonth() - today.getMonth());
+      (initialStart.getFullYear() - today.getFullYear()) * 12 + (initialStart.getMonth() - today.getMonth());
     return Math.min(Math.max(offset, 0), CAL_MAX_OFFSET);
   });
-  const [guests, setGuests] = useState<Guests>({ adults: 0, children: 0, infants: 0, pets: 0 });
+  // 검색한 게스트 수는 성인으로 반영 (검색바 카운터도 구분 없이 합산해 넘기므로)
+  const [guests, setGuests] = useState<Guests>({ adults: initialGuests ?? 0, children: 0, infants: 0, pets: 0 });
+  const [reserveStep, setReserveStep] = useState<ReserveStep | null>(null);
+  const [reservationId, setReservationId] = useState<string | null>(null);
+  const [reserveError, setReserveError] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const calLeft = new Date(today.getFullYear(), today.getMonth() + calOffset, 1);
@@ -102,15 +128,89 @@ export default function BookingCard({ price, dateRangeLabel, perPerson = false }
     setActivePopup((p) => (p === "date" ? null : "date"));
   }
 
+  // 예약하기: 날짜가 없으면 캘린더를 먼저 열어 선택을 유도하고(실제 에어비앤비 동작),
+  // 날짜가 있으면 요청 내용 확인 모달을 연다. 결제는 프로젝트 범위 밖.
+  function handleReserve() {
+    const hasDates = perPerson ? selectedStart !== null : selectedStart !== null && selectedEnd !== null;
+    if (!hasDates) {
+      setActivePopup("date");
+      return;
+    }
+    setActivePopup(null);
+    setReserveError(null);
+    setReservationId(null);
+    setReserveStep("review");
+  }
+
+  // 확인 모달에서 "예약 요청하기" → 데모 API에 POST. 로딩/성공/실패를 단계로 노출한다.
+  async function submitReservation() {
+    if (!selectedStart) return;
+    setReserveStep("submitting");
+    try {
+      const res = await fetch("/api/reservations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          itemId,
+          checkin: formatYMD(selectedStart),
+          checkout: formatYMD(perPerson ? selectedStart : selectedEnd ?? selectedStart),
+          guests: totalGuests || 1,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.error ?? "예약 요청에 실패했습니다.");
+      }
+      setReservationId(data.id);
+      setReserveStep("success");
+    } catch (e) {
+      // fetch 자체 실패(네트워크 단절)와 서버 에러 응답을 한 곳에서 처리
+      setReserveError(e instanceof Error ? e.message : "예약 요청에 실패했습니다.");
+      setReserveStep("error");
+    }
+  }
+
+  function closeReserveModal() {
+    // 요청이 날아간 상태에서 모달이 닫히면 응답이 와도 보여줄 곳이 없다 — 요청 중에는 닫기 무시
+    if (reserveStep === "submitting") return;
+    setReserveStep(null);
+  }
+
+  // 체험/서비스의 1인당 가격 계산 시 유아·반려동물은 인원에서 제외 (게스트 팝업 안내 문구와 일치)
+  const payingGuests = Math.max(guests.adults + guests.children, 1);
+  const totalPrice = perPerson ? price * payingGuests : price;
+
+  // 1박 가격 추정: 총액(price)은 숙소의 가능 기간 전체 요금이므로 그 기간의 박수로 나눈다 (프로모 카드 표기용)
+  const cardNights = cardRange ? Math.round((cardRange.end.getTime() - cardRange.start.getTime()) / 86400000) : 0;
+  const nightlyPrice = cardNights > 0 ? Math.round(price / cardNights) : null;
+
+  // 무료 취소 정책: 숙소는 체크인 5일 전, 체험/서비스는 이용일 2일 전까지.
+  // 날짜를 선택하기 전에는 정책 문구만, 선택 후에는 실제 마감일을 계산해 보여준다.
+  const cancelDeadline = selectedStart ? addDays(selectedStart, perPerson ? -2 : -5) : null;
+  const cancelPolicyLabel = cancelDeadline
+    ? cancelDeadline > today
+      ? `${formatDate(cancelDeadline)} 전까지 무료 취소 가능`
+      : "무료 취소 기간이 지났습니다"
+    : perPerson
+      ? "이용일 2일 전까지 무료 취소 가능"
+      : "체크인 5일 전까지 무료 취소 가능";
+
   return (
     <>
-      {!perPerson && (
+      {/* 1박 추가 프로모: 날짜·가격을 선택 상태에서 계산하므로 날짜가 있어야만 노출 */}
+      {!perPerson && nightlyPrice !== null && selectedEnd !== null && (
         <div className={styles.promoCard}>
           <div className={styles.promoIcon} dangerouslySetInnerHTML={{ __html: PROMO_ICON_SVG }} />
           <div className={styles.promoContent}>
-            <p className={styles.promoTitle}>₩155,000 더 내고 1박 추가</p>
-            <p className={styles.promoDesc}>특별가 혜택을 받아 숙박 기간을 9월 21일까지 연장해보세요.</p>
-            <button type="button" className={styles.promoLink}>
+            <p className={styles.promoTitle}>₩{nightlyPrice.toLocaleString()} 더 내고 1박 추가</p>
+            <p className={styles.promoDesc}>
+              특별가 혜택을 받아 숙박 기간을 {formatDate(addDays(selectedEnd, 1))}까지 연장해보세요.
+            </p>
+            <button
+              type="button"
+              className={styles.promoLink}
+              onClick={() => setSelectedEnd((d) => (d ? addDays(d, 1) : d))}
+            >
               1박 추가
             </button>
           </div>
@@ -292,15 +392,100 @@ export default function BookingCard({ price, dateRangeLabel, perPerson = false }
         </div>
 
         <p className={styles.cancelNotice}>
-          {perPerson ? "이용일 2일 전까지 무료 취소 가능" : "오늘 ₩0 · 9월 13일 전까지 무료 취소 가능"}
+          {perPerson ? cancelPolicyLabel : `오늘 ₩0 · ${cancelPolicyLabel}`}
         </p>
 
-        <button type="button" className={styles.reserveBtn}>
+        <button type="button" className={styles.reserveBtn} onClick={handleReserve}>
           예약하기
         </button>
 
         <p className={styles.chargeNotice}>예약 확정 전에는 요금이 청구되지 않습니다.</p>
       </div>
+
+      {reserveStep !== null && (
+        <Modal
+          title={
+            reserveStep === "success" ? "예약 요청 완료" : reserveStep === "error" ? "예약 요청 실패" : "예약 요청 확인"
+          }
+          onClose={closeReserveModal}
+          compact
+        >
+          <div className={styles.confirmBody}>
+            {reserveStep === "error" ? (
+              <>
+                <p className={styles.confirmErrorMsg}>{reserveError}</p>
+                <button type="button" className={styles.confirmBtn} onClick={submitReservation}>
+                  다시 시도
+                </button>
+                <button type="button" className={styles.confirmGhostBtn} onClick={closeReserveModal}>
+                  닫기
+                </button>
+              </>
+            ) : (
+              <>
+                {reserveStep === "success" && (
+                  <p className={styles.confirmSuccessMsg}>
+                    예약 요청이 접수되었습니다.
+                    <br />
+                    예약 번호 <strong>{reservationId}</strong>
+                  </p>
+                )}
+                <dl className={styles.confirmList}>
+                  <div className={styles.confirmRow}>
+                    <dt>날짜</dt>
+                    <dd>
+                      {perPerson
+                        ? selectedStart && formatDateWithYear(selectedStart)
+                        : selectedStart &&
+                          selectedEnd &&
+                          `${formatDateWithYear(selectedStart)} ~ ${formatDateWithYear(selectedEnd)} (${nights}박)`}
+                    </dd>
+                  </div>
+                  <div className={styles.confirmRow}>
+                    <dt>게스트</dt>
+                    <dd>게스트 {totalGuests || 1}명</dd>
+                  </div>
+                  <div className={styles.confirmRow}>
+                    <dt>총액</dt>
+                    <dd>
+                      ₩{totalPrice.toLocaleString()}
+                      {perPerson && (
+                        <span className={styles.confirmUnit}> (₩{price.toLocaleString()} × {payingGuests}인)</span>
+                      )}
+                    </dd>
+                  </div>
+                </dl>
+                {reserveStep === "success" ? (
+                  <button type="button" className={styles.confirmBtn} onClick={closeReserveModal}>
+                    확인
+                  </button>
+                ) : (
+                  <>
+                    <p className={styles.confirmNote}>
+                      포트폴리오 데모 프로젝트로, 실제 예약과 결제는 이루어지지 않습니다.
+                    </p>
+                    <button
+                      type="button"
+                      className={styles.confirmBtn}
+                      onClick={submitReservation}
+                      disabled={reserveStep === "submitting"}
+                    >
+                      {reserveStep === "submitting" ? (
+                        <>
+                          <span className={styles.confirmSpinner} aria-hidden="true" />
+                          요청 중…
+                        </>
+                      ) : (
+                        "예약 요청하기"
+                      )}
+                    </button>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        </Modal>
+      )}
     </>
   );
 }

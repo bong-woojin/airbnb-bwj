@@ -24,6 +24,10 @@ interface ItemDetailProps {
   categoryLabel: string;
   perPerson?: boolean;
   subtitle?: string;
+  // 목록에서 이어받은 검색 컨텍스트("YYYY-MM-DD", 게스트 수) — 예약카드 초기값
+  searchCheckin?: string;
+  searchCheckout?: string;
+  searchGuests?: number;
 }
 
 // 체험/서비스는 location이 도시명이 아니라 상품명이라, 제목에서 도시를 추정한다
@@ -34,7 +38,17 @@ function guessCity(title: string): string {
   return "서울";
 }
 
-export default function ItemDetail({ item, backHref, backLabel, categoryLabel, perPerson, subtitle }: ItemDetailProps) {
+export default function ItemDetail({
+  item,
+  backHref,
+  backLabel,
+  categoryLabel,
+  perPerson,
+  subtitle,
+  searchCheckin,
+  searchCheckout,
+  searchGuests,
+}: ItemDetailProps) {
   const { isWishlisted, toggle } = useWishlist(item.id);
   const pageTitle = subtitle ?? `${item.location} · ${categoryLabel}`;
   const isRoom = categoryLabel === "숙소";
@@ -112,9 +126,13 @@ export default function ItemDetail({ item, backHref, backLabel, categoryLabel, p
         </div>
         <div className={styles.lowerSide}>
           <BookingCard
+            itemId={item.id}
             price={item.price}
             dateRangeLabel={isRoom ? item.date : undefined}
             perPerson={perPerson}
+            initialCheckin={searchCheckin}
+            initialCheckout={searchCheckout}
+            initialGuests={searchGuests}
           />
         </div>
       </div>

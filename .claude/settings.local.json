@@ -25,7 +25,12 @@
       "Bash(awk '{sum+=$1; if\\($1>200\\) long++} END {print \"총 줄 수:\", NR; print \"200자 넘는\\(하드코딩 SVG path 등\\) 긴 줄:\", long}')",
       "Bash(awk '{sum+=$1; if\\($1>200\\) long++} END {print \"총 줄 수:\", NR; print \"200자 넘는 긴 줄 개수:\", long}')",
       "WebSearch",
-      "WebFetch(domain:www.airbnb.com)"
+      "WebFetch(domain:www.airbnb.com)",
+      "Bash(echo \"tsc exit: $?\")",
+      "PowerShell(npm test *)",
+      "PowerShell(npm run *)",
+      "Bash(python -c ' *)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('total:', d['total']\\)\")"
     ]
   }
 }

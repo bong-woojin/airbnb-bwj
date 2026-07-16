@@ -44,6 +44,11 @@ export function isStayWithinRange(stayStart: Date, stayEnd: Date, range: DateRan
   return stayStart >= range.start && stayEnd <= range.end;
 }
 
+// n일 뒤(음수면 앞) 날짜 — Date 생성자가 월/연도 넘김을 알아서 처리한다
+export function addDays(d: Date, n: number): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+}
+
 // 카드/검색바 표시용 "7월 15일~20일" | "7월 29일~8월 3일" 형식으로 변환
 export function formatRangeLabel(start: Date, end: Date): string {
   const head = `${start.getMonth() + 1}월 ${start.getDate()}일`;

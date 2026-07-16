@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
+  addDays,
   formatRangeLabel,
   formatYMD,
   isStayWithinRange,
@@ -80,6 +81,18 @@ describe("formatYMD / parseYMD", () => {
     expect(parseYMD(undefined)).toBeNull();
     expect(parseYMD("2026/07/08")).toBeNull();
     expect(parseYMD("abc")).toBeNull();
+  });
+});
+
+describe("addDays", () => {
+  test("일 단위 더하기/빼기", () => {
+    expect(addDays(new Date(2026, 6, 16), 1)).toEqual(new Date(2026, 6, 17));
+    expect(addDays(new Date(2026, 6, 16), -5)).toEqual(new Date(2026, 6, 11));
+  });
+
+  test("달/연도 경계를 넘어간다", () => {
+    expect(addDays(new Date(2026, 6, 31), 1)).toEqual(new Date(2026, 7, 1));
+    expect(addDays(new Date(2026, 0, 2), -5)).toEqual(new Date(2025, 11, 28));
   });
 });
 

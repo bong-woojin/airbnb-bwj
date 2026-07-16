@@ -9,18 +9,20 @@ interface ModalProps {
   title: string;
   onClose: () => void;
   children: ReactNode;
+  // 예약 확인처럼 내용이 짧은 모달용 — 콘텐츠 높이에 맞는 작은 패널로 렌더링
+  compact?: boolean;
 }
 
 // 숙소 설명/편의시설 모달이 공유하는 껍데기 (오버레이 + 헤더 + 스크롤 바디).
 // Escape 닫기 / 배경 스크롤 잠금 / 포커스 트랩은 useModalBehavior가 담당한다.
-export default function Modal({ title, onClose, children }: ModalProps) {
+export default function Modal({ title, onClose, children, compact = false }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   useModalBehavior(panelRef, onClose);
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div
-        className={styles.modalPanel}
+        className={compact ? `${styles.modalPanel} ${styles.modalPanelCompact}` : styles.modalPanel}
         onClick={(e) => e.stopPropagation()}
         ref={panelRef}
         role="dialog"
