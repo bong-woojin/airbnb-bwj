@@ -1,0 +1,6 @@
+/* 모바일 하단 탭바(64px)에 본문 끝이 가리지 않도록 */
+@media (max-width: 743px) {
+  .withTabBar {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+}

@@ -5,6 +5,7 @@ import { allRooms } from "@/data/rooms";
 import { formatRangeLabel, parseYMD } from "@/lib/dates";
 import { DEFAULT_PAGE_LIMIT, filterListings, paginate } from "@/lib/listings";
 import { toMetadata } from "@/lib/listingMeta";
+import { withCardImages } from "@/lib/gallery";
 
 interface RoomsPageProps {
   searchParams: Promise<{ location?: string; checkin?: string; checkout?: string; guests?: string }>;
@@ -64,7 +65,7 @@ export default async function RoomsPage({ searchParams }: RoomsPageProps) {
   return (
     <PageHeader activeTab={0} searchLabels={searchLabels}>
       <ListingResults
-        items={firstPage.items}
+        items={withCardImages(firstPage.items, allRooms.map((r) => r.image))}
         title={title}
         basePath="/rooms"
         mapQuery={location ?? "대한민국"}

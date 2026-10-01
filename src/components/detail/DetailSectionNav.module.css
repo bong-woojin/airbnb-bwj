@@ -1,0 +1,116 @@
+/* PC 상세 스크롤 탭 — 헤더(z-index 100) 위를 덮는 80px 흰 막대. 실제 사이트 값: 높이 80px, 14px 글씨 */
+.bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 150;
+  height: 80px;
+  background: #fff;
+  border-bottom: 1px solid #ebebeb;
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+
+.barVisible {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.inner {
+  max-width: 1120px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0; /* 본문(상세 wrapper, 1120px) 왼쪽 끝과 탭 글자 시작을 맞춘다 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.links {
+  display: flex;
+  gap: 24px;
+  height: 100%;
+}
+
+.link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+}
+
+/* 마우스를 올리면 아래에 굵은 밑줄 (실제 사이트) */
+.link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: #222;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.link:hover::after {
+  opacity: 1;
+}
+
+.reserve {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.reserveInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.reservePrice {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+}
+
+.reserveRating {
+  font-size: 12px;
+  color: #222;
+}
+
+.reserveBtn {
+  height: 48px;
+  padding: 0 32px;
+  border-radius: 999px;
+  background: var(--brand-gradient);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.reserveBtn:hover {
+  filter: brightness(0.95);
+}
+
+/* 본문 폭(1120px)보다 좁은 화면에선 본문과 같은 좌우 여백 */
+@media (max-width: 1167px) {
+  .inner {
+    padding: 0 24px;
+  }
+}
+
+@media (max-width: 743px) {
+  .bar {
+    display: none;
+  }
+}

@@ -203,3 +203,42 @@
     width: calc((100% - 32px) / 2.1);
   }
 }
+/* 모바일: 실제 에어비앤비처럼 카드 줄을 손가락으로 넘긴다 (스크롤 스냅). 다음 카드가 살짝 걸쳐 보이게 2.1장 */
+@media (max-width: 743px) {
+  .gridWrap {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    /* 카드 그림자·찜 버튼이 잘리지 않게 위아래 여유 */
+    padding: 4px 0 8px;
+  }
+
+  .gridWrap::-webkit-scrollbar {
+    display: none;
+  }
+
+  .grid > div {
+    scroll-snap-align: start;
+  }
+
+  .section {
+    margin-top: 2rem;
+  }
+
+  /* 오른쪽 끝 이동 버튼은 숨기고, 전체보기 화살표를 줄 오른쪽 끝으로 (실제 에어비앤비 모바일) */
+  .controls {
+    display: none;
+  }
+
+  .titleLink {
+    flex: 1;
+    justify-content: space-between;
+  }
+
+  .arrow {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+}

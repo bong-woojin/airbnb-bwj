@@ -69,12 +69,52 @@
 }
 
 .gallery {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
   aspect-ratio: 16 / 7;
   border-radius: 16px;
   overflow: hidden;
+}
+
+.galleryMain,
+.gallerySideItem {
+  cursor: pointer;
+}
+
+/* 사진 클릭 시 살짝 어둡게 — 실제 사이트처럼 눌러서 전체 보기로 들어간다는 표시 */
+.galleryMain:hover,
+.gallerySideItem:hover {
+  filter: brightness(0.92);
+}
+
+/* 갤러리 오른쪽 아래 "사진 모두 보기" (실제 사이트) */
+.showAllPhotos {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 15px;
+  border: 1px solid #222;
+  border-radius: 8px;
+  background: #fff;
+  color: #222;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.showAllPhotos:hover {
+  background: #f7f7f7;
+}
+
+.showAllPhotos svg {
+  width: 16px;
+  height: 16px;
+  fill: currentcolor;
 }
 
 .galleryMain {
@@ -269,9 +309,9 @@
   padding: 14px 22px;
   margin-top: 12px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   color: #222;
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .sleepSection {
@@ -299,14 +339,29 @@
   background: #eee;
 }
 
+.sleepHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.sleepHeader .sleepTitle {
+  margin-bottom: 0;
+}
+
+.sleepCard {
+  margin: 0;
+  min-width: 0;
+}
+
 .sleepLabel {
-  position: absolute;
-  left: 12px;
-  bottom: 12px;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  display: block;
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #222;
 }
 
 .sleepControls {
@@ -314,7 +369,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 12px;
+  flex-shrink: 0;
 }
 
 .sleepPageLabel {
@@ -634,4 +689,199 @@
   max-width: 92vw;
   max-height: 90vh;
   border-radius: 16px;
+}
+
+/* ── 모바일 갤러리(캐러셀) — 데스크톱에선 숨김 ── */
+.mobileGallery {
+  display: none;
+}
+
+@media (max-width: 743px) {
+  /* 상세 본문을 세로 flex로 — 모바일 캐러셀(order:-1)을 맨 위로 올린다. 헤더는 모바일에서 숨는다(PageHeader mobileLayout="detail") */
+  .wrapper {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: calc(140px + env(safe-area-inset-bottom)); /* 하단 예약 바 높이만큼 (날짜 선택 전 2줄 바 포함) */
+  }
+
+  .back,
+  .headerActions,
+  .gallery {
+    display: none;
+  }
+
+  .headerRow {
+    padding-top: 0;
+  }
+
+  .pageTitle {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  /* 한국어 제목·배지가 글자 단위로 끊기지 않게 (예: "욕/실2", "게스/트") */
+  .pageTitle,
+  .favoriteTitle,
+  .favoriteDesc {
+    word-break: keep-all;
+  }
+
+  .favoriteTitleRow {
+    flex-shrink: 0;
+  }
+
+  .highlights {
+    grid-template-columns: 1fr;
+  }
+
+  /* "더 보기" / "편의시설 N개 모두 보기": 실제 모바일처럼 화면 폭을 채우는 회색 버튼 */
+  .moreBtn {
+    display: block;
+    width: 100%;
+    margin-top: 16px;
+    padding: 13px 22px;
+    text-align: center;
+    font-weight: 500;
+    border-radius: 8px;
+  }
+
+  /* 알아두어야 할 사항: 3칸이면 글자가 한두 자씩 끊긴다 — 세로로 쌓고 항목 사이에 구분선 */
+  .knowList {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .knowItem {
+    padding: 20px 0;
+    border-bottom: 1px solid #ebebeb;
+  }
+
+  .knowItem:last-child {
+    border-bottom: 0;
+  }
+
+  .knowDesc {
+    word-break: keep-all;
+  }
+
+  /* 예약카드가 숨겨진 자리(오른쪽 칼럼)는 공간을 차지하지 않게 */
+  .lowerSide {
+    height: 0;
+  }
+
+  .mobileGallery {
+    display: block;
+    position: relative;
+    order: -1;
+    /* wrapper 좌우·위 padding(16px)을 넘어 화면 끝까지 */
+    margin: -16px -16px 20px;
+  }
+
+  .mobileTrack {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    aspect-ratio: 4 / 3;
+  }
+
+  .mobileTrack::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobileSlide {
+    position: relative;
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    background: #eee;
+  }
+
+  .mobileCounter {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: rgba(34, 34, 34, 0.66);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .mobileActions {
+    position: absolute;
+    top: calc(12px + env(safe-area-inset-top));
+    left: 16px;
+    right: 16px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .mobileActionsRight {
+    display: flex;
+    gap: 12px;
+  }
+
+  .mobileActionBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #fff;
+    color: #222;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  }
+
+  .mobileToast {
+    position: absolute;
+    top: 44px;
+    right: 0;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: #222;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+  }
+}
+
+/* 모바일 상세: 실제 사이트처럼 본문 흰 시트가 사진 아래쪽을 둥근 모서리로 덮고, 제목은 가운데 */
+@media (max-width: 743px) {
+  .mobileGallery {
+    margin-bottom: -24px;
+  }
+
+  .mobileCounter {
+    bottom: 40px; /* 시트에 가려지지 않게 시트 위로 */
+  }
+
+  .headerRow {
+    position: relative;
+    z-index: 1;
+    align-items: center;
+    margin: 0 -16px 8px;
+    padding: 28px 24px 0;
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .pageTitle {
+    font-size: 26px;
+    text-align: center;
+  }
+}
+
+/* PC 스크롤 탭으로 이동할 때 탭 줄(80px)에 제목이 가려지지 않게 */
+.anchor {
+  scroll-margin-top: 96px;
+}
+
+/* 모바일 "1 / 5"는 버튼(눌러서 사진 모두 보기) — 기본 버튼 모양 제거 */
+.mobileCounter {
+  border: 0;
+  font-family: inherit; /* font 단축 속성은 위 모바일 규칙의 크기·굵기까지 덮어쓰므로 쓰지 않는다 */
+  cursor: pointer;
 }

@@ -1,0 +1,76 @@
+/* 모바일 하단 탭바 — 743px 이하에서만 보인다 */
+.bar {
+  display: none;
+}
+
+@media (max-width: 743px) {
+  .bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 90; /* 헤더(100)·검색 모달(1100) 아래, 본문 위 */
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    height: calc(64px + env(safe-area-inset-bottom));
+    padding: 8px 0 env(safe-area-inset-bottom);
+    background: #fff;
+    border-top: 1px solid #ebebeb;
+    transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .barHidden {
+    transform: translateY(100%);
+  }
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 64px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #6a6a6a;
+}
+
+.itemActive {
+  color: var(--brand);
+}
+
+.iconWrap {
+  position: relative;
+  display: flex;
+}
+
+.iconFill {
+  width: 24px;
+  height: 24px;
+  fill: currentcolor;
+}
+
+.iconStroke {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2.5;
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -10px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}

@@ -1,0 +1,94 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200; /* 헤더·스크롤 탭·하단 바 위 */
+  overflow-y: auto;
+  background: #fff;
+  animation: tourIn 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes tourIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 64px;
+  padding: 0 24px;
+  background: #fff;
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: #222;
+}
+
+.closeBtn:hover {
+  background: #f7f7f7;
+}
+
+.closeBtn svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 3;
+}
+
+.count {
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  max-width: 744px;
+  margin: 0 auto;
+  padding: 16px 24px 64px;
+}
+
+.photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: #eee;
+}
+
+.photoWide {
+  grid-column: 1 / -1;
+  aspect-ratio: 3 / 2;
+}
+
+.image {
+  object-fit: cover;
+}
+
+@media (max-width: 743px) {
+  .top {
+    padding: 0 12px;
+  }
+
+  .grid {
+    gap: 4px;
+    padding: 8px 0 32px;
+  }
+}

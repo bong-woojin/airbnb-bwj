@@ -169,3 +169,21 @@
   border-color: #222;
   background: #f7f7f7;
 }
+
+/* 모바일 검색 모달 안: 두 달을 세로로 쌓고, ±일 버튼 줄은 가로 스크롤 */
+@media (max-width: 743px) {
+  .calWrapper {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .dateFlexRow {
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+
+  .dateFlexBtn {
+    flex-shrink: 0;
+  }
+}

@@ -47,17 +47,13 @@
   flex-shrink: 0;
 }
 
-.compactItem {
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #222;
-}
-
+/* 세 칸 모두 같은 스타일 (실제 사이트: 14px / 500 / #222 — 값이 없을 때도 회색으로 흐리지 않는다) */
+.compactItem,
 .compactItemLight {
   padding: 8px 16px;
-  font-size: 13px;
-  color: #717171;
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
 }
 
 .compactDivider {
@@ -71,7 +67,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #ff385c;
+  background: var(--brand-gradient);
   color: #fff;
   display: flex;
   align-items: center;
@@ -84,7 +80,7 @@
 }
 
 .compactBtn:hover {
-  background: #e61e4d;
+  filter: brightness(0.95);
   transform: scale(1.05);
 }
 
@@ -278,7 +274,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #ff385c;
+  background: var(--brand-gradient);
   color: #fff;
   display: flex;
   align-items: center;
@@ -291,7 +287,7 @@
 }
 
 .searchBtn:hover {
-  background: #e61e4d;
+  filter: brightness(0.95);
   transform: translateY(-50%) scale(1.04);
 }
 
@@ -478,5 +474,14 @@
   .searchBtn {
     width: 36px;
     height: 36px;
+  }
+}
+
+/* 모바일(743px 이하): 데스크톱 검색바(확장/압축/오버레이) 대신 헤더 알약 + 전체 화면 모달(MobileSearch) */
+@media (max-width: 743px) {
+  .expandedSearch,
+  .compactSearchOuter,
+  .searchOverlay {
+    display: none;
   }
 }

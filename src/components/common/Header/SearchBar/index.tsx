@@ -3,13 +3,16 @@
 import { useId, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatYMD } from "@/lib/dates";
-import { searchPathForTab } from "@/lib/tabs";
+import Link from "next/link";
+import { homeTabHref, searchPathForTab } from "@/lib/tabs";
 import styles from "./SearchBar.module.css";
 import LocationPopup from "./LocationPopup";
 import CalendarPopup from "./CalendarPopup";
 import GuestCounter, { type GuestKey, type Guests } from "@/components/common/GuestCounter";
 import ServiceTypePopup from "./ServiceTypePopup";
 import CompactSearchBar, { type SearchLabels } from "./CompactSearchBar";
+import MobileSearchModal, { type MobileStep } from "./MobileSearchModal";
+import mobileStyles from "./MobileSearch.module.css";
 import { sectionToIdx } from "./flip";
 import { useSectionPopup } from "./useSectionPopup";
 import { useSearchTransition } from "./useSearchTransition";
@@ -37,6 +40,9 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
   const [locationQuery, setLocationQuery] = useState(""); // 여행지 입력창에 친 텍스트
   const [selectedLocation, setSelectedLocation] = useState(""); // 목록에서 고른 도시
   const [selectedServiceType, setSelectedServiceType] = useState("");
+  // 모바일(743px 이하): 헤더 알약 → 전체 화면 검색 모달. 검색 조건 state는 데스크톱과 공유한다.
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileStep, setMobileStep] = useState<MobileStep>("location");
   const [dateSelection, setDateSelection] = useState<DateSelection>(EMPTY_DATE_SELECTION);
   const [guests, setGuests] = useState<Guests>(EMPTY_GUESTS);
 
@@ -125,6 +131,7 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
     const query = params.toString();
     const path = searchPathForTab(activeTab);
     closeSection();
+    setMobileOpen(false);
     router.push(query ? `${path}?${query}` : path);
     // 목록 페이지에서 재검색한 경우: 같은 라우트라 컴포넌트가 유지되므로 직접 접는다
     if (forceScrolled) collapseToCompact();
@@ -140,6 +147,23 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
     setSelectedLocation("");
     setLocationQuery("");
     openSection("location");
+  }
+
+  // 모바일 모달용: 도시 선택(빈 문자열이면 선택 해제) 후 날짜 카드로 넘어간다
+  function selectLocationMobile(title: string) {
+    setSelectedLocation(title);
+    if (!title) return;
+    setLocationQuery(title);
+    setMobileStep("date");
+  }
+
+  function resetAll() {
+    setLocationQuery("");
+    setSelectedLocation("");
+    setSelectedServiceType("");
+    setDateSelection(EMPTY_DATE_SELECTION);
+    setGuests(EMPTY_GUESTS);
+    setMobileStep("location");
   }
 
   function adjustGuest(key: GuestKey, delta: number) {
@@ -160,6 +184,65 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
     <>
       {/* 목록 페이지에서 검색바 확장 시 본문 위를 덮는 반투명 오버레이 */}
       {forceScrolled && !scrolled && <div className={styles.searchOverlay} />}
+
+      {/* 모바일 전용 알약 버튼 (데스크톱에서는 CSS로 숨김). 목록 페이지에선 현재 검색 조건 요약을 보여준다 */}
+      <div className={`${mobileStyles.pillOuter} ${forceScrolled ? mobileStyles.pillOuterWithBack : ""}`}>
+        {/* 목록·상세 페이지: 알약 왼쪽 뒤로가기 → 해당 탭의 홈 (실제 에어비앤비 모바일 검색 결과 화면) */}
+        {forceScrolled && (
+          <Link href={homeTabHref(activeTab)} className={mobileStyles.backBtn} aria-label="홈으로">
+            <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+              <path d="M20 28 8.7 16.7a1 1 0 0 1 0-1.4L20 4" />
+            </svg>
+          </Link>
+        )}
+        <button
+          type="button"
+          className={mobileStyles.pill}
+          onClick={() => {
+            setMobileStep(selectedLocation ? "date" : "location");
+            setMobileOpen(true);
+          }}
+        >
+          <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+            <path d="M13 0C5.82 0 0 5.82 0 13s5.82 13 13 13c3.33 0 6.36-1.26 8.65-3.32l8.84 8.84 1.41-1.41-8.84-8.84C25.26 19.36 26 16.33 26 13c0-7.18-5.82-13-13-13zm0 2c6.07 0 11 4.93 11 11S19.07 24 13 24 2 19.07 2 13 6.93 2 13 2z" />
+          </svg>
+          <span className={mobileStyles.pillText}>
+            {searchLabels && (searchLabels.location || searchLabels.date || searchLabels.guests) ? (
+              <>
+                <span className={mobileStyles.pillMain}>{searchLabels.location ?? "어디든지"}</span>
+                <span className={mobileStyles.pillSub}>
+                  {searchLabels.date ?? "언제든지"} · {searchLabels.guests ?? "게스트 추가"}
+                </span>
+              </>
+            ) : (
+              <span className={mobileStyles.pillMain}>검색을 시작해 보세요</span>
+            )}
+          </span>
+        </button>
+      </div>
+
+      {mobileOpen && (
+        <MobileSearchModal
+          activeTab={activeTab}
+          step={mobileStep}
+          onStepChange={setMobileStep}
+          locationQuery={locationQuery}
+          onLocationQueryChange={setLocationQuery}
+          selectedLocation={selectedLocation}
+          onSelectLocation={selectLocationMobile}
+          dateSelection={dateSelection}
+          onDateChange={setDateSelection}
+          dateLabel={dateLabel}
+          guests={guests}
+          onAdjustGuest={adjustGuest}
+          selectedServiceType={selectedServiceType}
+          onSelectServiceType={setSelectedServiceType}
+          guestSummary={guestPlaceholder}
+          onReset={resetAll}
+          onSearch={handleSearch}
+          onClose={() => setMobileOpen(false)}
+        />
+      )}
 
       <CompactSearchBar
         visible={scrolled}

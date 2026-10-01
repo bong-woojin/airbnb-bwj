@@ -3,6 +3,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import ListingResults from "@/components/listing/ListingResults";
 import { allServices, servicesByCategory, servicesByLocation } from "@/data/services";
 import { toMetadata } from "@/lib/listingMeta";
+import { withCardImages } from "@/lib/gallery";
 
 const CATEGORY_TITLES: Record<string, string> = {
   photo: "사진 촬영 서비스",
@@ -41,7 +42,7 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
   return (
     <PageHeader activeTab={2}>
       <ListingResults
-        items={items}
+        items={withCardImages(items, allServices.map((i) => i.image))}
         title={`${titleBase} ${items.length}개`}
         basePath="/services"
         mapQuery={location ?? "대한민국"}

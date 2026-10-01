@@ -140,3 +140,73 @@
     gap: 24px 12px;
   }
 }
+
+/* ── 지도 토글 (949px 이하) ── 넓은 화면에선 숨김 */
+.mapToggle {
+  display: none;
+}
+
+@media (max-width: 949px) {
+  .mapToggle {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 20px;
+    border-radius: 24px;
+    background: #222;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    transition: transform 0.15s;
+  }
+
+  .mapToggle:active {
+    transform: translateX(-50%) scale(0.96);
+  }
+
+  .mapToggle svg {
+    width: 16px;
+    height: 16px;
+    fill: currentcolor;
+  }
+
+  /* 지도 모드: 목록을 숨기고 지도를 헤더 아래 전체에 깐다 (--header-h: PageHeader가 실측해 넣는 헤더 높이) */
+  .mapMode .left {
+    display: none;
+  }
+
+  .mapMode .right {
+    display: block;
+    width: 100%;
+  }
+
+  .mapMode .mapSticky {
+    position: fixed;
+    top: var(--header-h, 80px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-width: none;
+    height: auto;
+    border-radius: 0;
+  }
+}
+
+/* 모바일: 카드 1열 (실제 에어비앤비 모바일과 같이 큰 카드), 토글 버튼은 하단 탭바(64px) 위로 */
+@media (max-width: 743px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .mapToggle {
+    bottom: calc(64px + 16px + env(safe-area-inset-bottom));
+  }
+}

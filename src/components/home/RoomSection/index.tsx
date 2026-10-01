@@ -126,7 +126,8 @@ export default function RoomSection({ title, href, basePath, rooms, priority, pe
         <div className={styles.gridWrap} ref={wrapRef}>
           <div
             className={styles.grid}
-            style={{ transform: `translateX(${-offset * stepSize}px)` }}
+            // 모바일은 화살표 대신 손가락 스와이프(네이티브 가로 스크롤 + 스냅) — transform을 걸지 않는다
+            style={isMobile ? undefined : { transform: `translateX(${-offset * stepSize}px)` }}
           >
             {rooms.map((room, index) => (
               <div key={room.id} className={cardClassName} style={cardStyle}>

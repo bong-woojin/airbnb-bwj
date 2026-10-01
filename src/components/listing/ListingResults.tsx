@@ -1,4 +1,5 @@
 import ListingGrid from "./ListingGrid";
+import ListingLayout from "./ListingLayout";
 import type { ListingItem } from "@/data/types";
 import styles from "./ListingResults.module.css";
 
@@ -31,25 +32,27 @@ export default function ListingResults({
   hasMore,
 }: ListingResultsProps) {
   return (
-    <div className={styles.results}>
-      <div className={styles.left}>
-        <h1 className={styles.title}>{title}</h1>
-        {items.length === 0 ? (
-          <p className={styles.empty}>표시할 항목이 없습니다.</p>
-        ) : (
-          <ListingGrid
-            // 검색 조건이 바뀌면(쿼리가 바뀌면) 그리드 상태(누적 항목, 페이지 번호)를 리셋하기 위해 리마운트
-            key={fetchQuery ?? "static"}
-            initialItems={items}
-            basePath={basePath}
-            perPerson={perPerson}
-            linkQuery={linkQuery}
-            fetchQuery={fetchQuery}
-            initialHasMore={hasMore}
-          />
-        )}
-      </div>
-      <div className={styles.right}>
+    <ListingLayout
+      list={
+        <>
+          <h1 className={styles.title}>{title}</h1>
+          {items.length === 0 ? (
+            <p className={styles.empty}>표시할 항목이 없습니다.</p>
+          ) : (
+            <ListingGrid
+              // 검색 조건이 바뀌면(쿼리가 바뀌면) 그리드 상태(누적 항목, 페이지 번호)를 리셋하기 위해 리마운트
+              key={fetchQuery ?? "static"}
+              initialItems={items}
+              basePath={basePath}
+              perPerson={perPerson}
+              linkQuery={linkQuery}
+              fetchQuery={fetchQuery}
+              initialHasMore={hasMore}
+            />
+          )}
+        </>
+      }
+      map={
         <div className={styles.mapSticky}>
           <iframe
             className={styles.mapFrame}
@@ -59,7 +62,7 @@ export default function ListingResults({
             title="검색 결과 지도"
           />
         </div>
-      </div>
-    </div>
+      }
+    />
   );
 }

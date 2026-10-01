@@ -34,7 +34,7 @@ export default async function ExperienceDetailPage({ params }: ExperienceDetailP
   const galleryImages = pickGalleryImages(experience.image, allExperiences.map((i) => i.image), experience.id);
 
   return (
-    <PageHeader activeTab={1}>
+    <PageHeader activeTab={1} mobileLayout="detail">
       <ItemDetail
         item={experience}
         backHref="/experiences"

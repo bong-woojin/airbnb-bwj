@@ -21,3 +21,8 @@ export function pickGalleryImages(main: string, pool: string[], seed: string, co
   const picked = Array.from({ length: Math.min(count - 1, others.length) }, (_, i) => others[(start + i) % others.length]);
   return [main, ...picked];
 }
+
+// 목록 카드용: 각 항목에 상세 갤러리와 같은 사진 묶음을 붙인다 (카드에서 넘겨 본 사진 = 상세에서 보는 사진)
+export function withCardImages<T extends { id: string; image: string }>(items: T[], pool: string[]): (T & { images: string[] })[] {
+  return items.map((item) => ({ ...item, images: pickGalleryImages(item.image, pool, item.id) }));
+}

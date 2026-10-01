@@ -187,3 +187,164 @@
   font-size: 10px;
   margin-left: 2px;
 }
+
+/* ── 사진 트랙: 한 장이면 그대로, 여러 장이면 가로 스크롤 스냅으로 넘긴다 ── */
+.track {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.slide {
+  position: relative;
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+}
+
+/* 사진 위치 점 (실제 사이트: 6px, 활성 흰색 / 나머지 60% 흰색, 간격 5px) */
+.dots {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  z-index: 2;
+  display: flex;
+  gap: 5px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  transition: background 0.2s;
+}
+
+.dotActive {
+  background: #fff;
+}
+
+/* 이전/다음 화살표 — 사진 영역과 같은 크기의 겹침 레이어, 카드에 마우스를 올렸을 때만 */
+.navLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  aspect-ratio: 20 / 19;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.cardWrap:hover .navLayer,
+.navLayer:focus-within {
+  opacity: 1;
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: #222;
+  box-shadow: rgba(0, 0, 0, 0.18) 0 2px 4px 0;
+  pointer-events: auto;
+  transition: transform 0.15s;
+}
+
+.navBtn:hover {
+  transform: scale(1.04);
+  background: #fff;
+}
+
+.navBtn svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 4;
+}
+
+.navNext {
+  margin-left: auto;
+}
+
+/* 터치 기기는 손가락으로 넘긴다 — 화살표 숨김 */
+@media (hover: none) {
+  .navLayer {
+    display: none;
+  }
+}
+
+/* ── 목록(검색 결과) 카드: 실제 사이트 값 — 사진 4:3, 15px 글씨, 평점은 첫 줄 오른쪽, 가격은 밑줄 ── */
+.cardList .imageWrap,
+.cardList .navLayer {
+  aspect-ratio: 4 / 3;
+}
+
+.cardList .imageWrap {
+  border-radius: 16px;
+}
+
+.cardList .card {
+  gap: 12px;
+}
+
+.cardList .info {
+  min-height: 60px;
+}
+
+.cardList .infoContent {
+  gap: 4px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardList .location {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 19px;
+  color: #222;
+}
+
+.ratingRight {
+  flex-shrink: 0;
+  font-size: 15px;
+  line-height: 19px;
+  color: #222;
+}
+
+.cardList .date {
+  font-size: 15px;
+  line-height: 19px;
+  color: #6a6a6a;
+}
+
+.priceList {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 19px;
+  color: #222;
+  text-decoration: underline;
+}

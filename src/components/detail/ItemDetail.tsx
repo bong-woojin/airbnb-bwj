@@ -13,6 +13,7 @@ import SleepGallery from "./SleepGallery";
 import AmenitiesSection from "./AmenitiesSection";
 import KnowSection from "./KnowSection";
 import LocationSection from "./LocationSection";
+import DetailSectionNav from "./DetailSectionNav";
 import { EXPERIENCE_DESCRIPTION, SERVICE_DESCRIPTION } from "./content";
 import { ChevronIcon, ShareIcon, HeartIcon } from "./icons";
 import type { ListingItem } from "@/data/types";
@@ -70,11 +71,6 @@ export default function ItemDetail({
 
   return (
     <div className={styles.wrapper}>
-      <Link href={backHref} className={styles.back}>
-        <ChevronIcon flip />
-        {backLabel}
-      </Link>
-
       <div className={styles.headerRow}>
         <h1 className={styles.pageTitle}>{pageTitle}</h1>
         <div className={styles.headerActions}>
@@ -94,7 +90,31 @@ export default function ItemDetail({
         </div>
       </div>
 
-      <DetailGallery images={galleryImages ?? [item.image]} alt={item.location} />
+      <DetailGallery
+        images={galleryImages ?? [item.image]}
+        alt={item.location}
+        mobileOverlay={
+          <div className={styles.mobileActions}>
+            <Link href={backHref} className={styles.mobileActionBtn} aria-label={backLabel}>
+              <ChevronIcon flip />
+            </Link>
+            <div className={styles.mobileActionsRight}>
+              <button type="button" className={styles.mobileActionBtn} onClick={handleShare} aria-label={copied ? "링크 복사됨" : "공유하기"}>
+                <ShareIcon />
+              </button>
+              <button
+                type="button"
+                className={styles.mobileActionBtn}
+                onClick={toggle}
+                aria-label={isWishlisted ? "찜 목록에서 삭제" : "찜하기"}
+              >
+                <HeartIcon filled={isWishlisted} />
+              </button>
+            </div>
+            {copied && <span className={styles.mobileToast} role="status">링크 복사됨!</span>}
+          </div>
+        }
+      />
 
       <div className={styles.lowerRow}>
         <div className={styles.lowerMain}>
@@ -132,22 +152,45 @@ export default function ItemDetail({
             initialCheckout={searchCheckout}
             initialGuests={searchGuests}
             maxGuests={item.maxGuests}
+            rating={item.rating}
           />
         </div>
       </div>
 
-      <LocationSection
-        location={item.location}
-        cityLabel={cityLabel}
-        mapQuery={cityLabel}
-      />
+      <div id="location" className={styles.anchor}>
+        <LocationSection
+          location={item.location}
+          cityLabel={cityLabel}
+          mapQuery={cityLabel}
+        />
+      </div>
 
       {isRoom && (
         <>
-          <AmenitiesSection />
-          <KnowSection />
+          <div id="amenities" className={styles.anchor}>
+            <AmenitiesSection />
+          </div>
+          <div id="rules" className={styles.anchor}>
+            <KnowSection />
+          </div>
         </>
       )}
+
+      {/* PC 스크롤 탭 — 사진 영역을 지나면 헤더 자리에 나타난다 (모바일은 숨김) */}
+      <DetailSectionNav
+        sections={[
+          { id: "photos", label: "사진" },
+          { id: "location", label: "위치" },
+          ...(isRoom
+            ? [
+                { id: "amenities", label: "편의시설" },
+                { id: "rules", label: "이용 규칙" },
+              ]
+            : []),
+        ]}
+        priceText={perPerson ? `1인당 ₩${item.price.toLocaleString()}` : `총액 ₩${item.price.toLocaleString()}`}
+        rating={item.rating}
+      />
     </div>
   );
 }

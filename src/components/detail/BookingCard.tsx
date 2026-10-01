@@ -23,6 +23,8 @@ interface BookingCardProps {
   // 최대 인원(유아 제외) — 숙소의 maxGuests. 없으면(체험/서비스) DEFAULT_MAX_GUESTS.
   // 서버(/api/reservations)도 같은 값으로 검증하므로 + 버튼 상한·안내 문구를 여기에 맞춘다.
   maxGuests?: number;
+  // 모바일 하단 바에서 날짜 선택 전 표시용 평점
+  rating?: number;
 }
 
 // 목데이터의 예약 가능 기간이 오늘부터 최대 약 90일 뒤까지라 캘린더도 3개월 뒤까지 탐색을 허용한다.
@@ -54,6 +56,7 @@ export default function BookingCard({
   initialCheckout,
   initialGuests,
   maxGuests,
+  rating,
 }: BookingCardProps) {
   const guestCap = maxGuests ?? DEFAULT_MAX_GUESTS;
   const today = getToday();
@@ -152,6 +155,23 @@ export default function BookingCard({
     setActivePopup((p) => (p === "date" ? null : "date"));
   }
 
+  // 모바일 하단 예약 바: 모바일에선 예약카드를 숨기고(바가 대신한다), 캘린더는 전체 화면 시트로 연다
+  function openDatesFromBar() {
+    setActivePopup("date");
+  }
+
+  // 모바일: 카드가 숨겨져 있으므로 인원은 예약 확인 모달에서 바꾼다 → 모달을 닫고 게스트 하단 시트를 연다
+  function editGuestsFromModal() {
+    setReserveStep(null);
+    setActivePopup("guests");
+  }
+
+  function reserveFromBar() {
+    const hasDates = perPerson ? selectedStart !== null : selectedStart !== null && selectedEnd !== null;
+    if (!hasDates) openDatesFromBar();
+    else handleReserve();
+  }
+
   // 예약하기: 날짜가 없으면 캘린더를 먼저 열어 선택을 유도하고(실제 에어비앤비 동작),
   // 날짜가 있으면 요청 내용 확인 모달을 연다. 결제는 프로젝트 범위 밖.
   function handleReserve() {
@@ -243,7 +263,7 @@ export default function BookingCard({
         </div>
       )}
 
-      <div className={styles.card} ref={cardRef}>
+      <div className={styles.card} ref={cardRef} id="booking">
         <p className={styles.totalRow}>
           {perPerson ? (
             <>
@@ -474,7 +494,12 @@ export default function BookingCard({
                   </div>
                   <div className={styles.confirmRow}>
                     <dt>게스트</dt>
-                    <dd>{guestSummary}</dd>
+                    <dd>
+                      {guestSummary}
+                      <button type="button" className={styles.confirmEdit} onClick={editGuestsFromModal}>
+                        변경
+                      </button>
+                    </dd>
                   </div>
                   <div className={styles.confirmRow}>
                     <dt>총액</dt>
@@ -516,6 +541,39 @@ export default function BookingCard({
             )}
           </div>
         </Modal>
+      )}
+
+      {/* 모바일(743px 이하) 하단 고정 예약 바 — 실제 에어비앤비 모바일처럼 가격·날짜 + 예약하기 */}
+      {/* 날짜를 고르기 전: 실제 사이트처럼 "날짜를 선택해 요금 확인" + 폭을 채우는 "예약 가능 여부 보기" */}
+      {!selectedStart ? (
+        <div className={`${styles.mobileBar} ${styles.mobileBarNoDates}`}>
+          <div className={styles.mobileBarInfo}>
+            <span className={styles.mobileBarPrice}>날짜를 선택해 요금 확인</span>
+            {rating != null && <span className={styles.mobileBarRating}>★ {rating}</span>}
+          </div>
+          <button type="button" className={styles.mobileBarBtn} onClick={openDatesFromBar}>
+            예약 가능 여부 보기
+          </button>
+        </div>
+      ) : (
+      <div className={styles.mobileBar}>
+        <div className={styles.mobileBarInfo}>
+          <span className={styles.mobileBarPrice}>
+            ₩{(perPerson ? price : totalPrice).toLocaleString()}
+            <span className={styles.mobileBarUnit}>{perPerson ? " /인" : " 총액"}</span>
+          </span>
+          <button type="button" className={styles.mobileBarDates} onClick={openDatesFromBar}>
+            {selectedStart
+              ? perPerson || !selectedEnd
+                ? formatDate(selectedStart)
+                : `${formatDate(selectedStart)} ~ ${formatDate(selectedEnd)}`
+              : "날짜 선택"}
+          </button>
+        </div>
+        <button type="button" className={styles.mobileBarBtn} onClick={reserveFromBar}>
+          예약하기
+        </button>
+      </div>
       )}
     </>
   );

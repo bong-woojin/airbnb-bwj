@@ -88,6 +88,7 @@ export default function ListingGrid({
             {...item}
             href={`${basePath}/${item.id}${linkQuery ? `?${linkQuery}` : ""}`}
             perPerson={perPerson}
+            variant="list"
             priority={index < 4}
           />
         ))}

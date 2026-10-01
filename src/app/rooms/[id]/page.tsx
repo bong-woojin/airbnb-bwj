@@ -45,7 +45,7 @@ export default async function RoomDetailPage({ params, searchParams }: RoomDetai
   const galleryImages = pickGalleryImages(room.image, allRooms.map((r) => r.image), room.id);
 
   return (
-    <PageHeader activeTab={0}>
+    <PageHeader activeTab={0} mobileLayout="detail">
       <ItemDetail
         item={room}
         backHref="/"

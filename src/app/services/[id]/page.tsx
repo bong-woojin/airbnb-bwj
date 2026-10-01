@@ -34,7 +34,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
   const galleryImages = pickGalleryImages(service.image, allServices.map((i) => i.image), service.id);
 
   return (
-    <PageHeader activeTab={2}>
+    <PageHeader activeTab={2} mobileLayout="detail">
       <ItemDetail
         item={service}
         backHref="/services"

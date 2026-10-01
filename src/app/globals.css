@@ -85,3 +85,9 @@ textarea {
     scroll-padding-top: 3rem;
   }
 }
+
+/* 주요 버튼(검색·예약) 색 — 실제 에어비앤비 값. 로고·찜 하트는 #FF385C 그대로 */
+:root {
+  --brand: #e31c5f;
+  --brand-gradient: linear-gradient(to right, #e61e4d 0%, #e31c5f 50%, #d70466 100%);
+}

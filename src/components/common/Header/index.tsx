@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import styles from "./Header.module.css";
 import SearchBar from "./SearchBar";
@@ -13,6 +14,9 @@ const TABS = [
       "https://a0.muscache.com/im/pictures/airbnb-platform-assets/AirbnbPlatformAssets-search-bar-icons/original/4aae4ed7-5939-4e76-b100-e69440ebeae4.png?im_w=240",
     hevc: "https://a0.muscache.com/videos/search-bar-icons/hevc/house-twirl-selected.mov",
     webm: "https://a0.muscache.com/videos/search-bar-icons/webm/house-twirl-selected.webm",
+    // 모바일 칩 아이콘 (실제 에어비앤비 모바일 웹과 같은 에셋) — 기본 / 선택됨
+    mobileIcon: "https://a0.muscache.com/im/pictures/AirbnbPlatformAssets/AirbnbPlatformAssets-search-bar-icons/original/d4446c94-f881-4797-a0ed-ebc6631386de.png?im_w=120",
+    mobileIconActive: "https://a0.muscache.com/im/pictures/AirbnbPlatformAssets/AirbnbPlatformAssets-search-bar-icons/original/3afe83ba-9aab-403b-a6f6-e4f557d74fc7.png?im_w=120",
   },
   {
     label: "체험",
@@ -20,6 +24,8 @@ const TABS = [
       "https://a0.muscache.com/im/pictures/airbnb-platform-assets/AirbnbPlatformAssets-search-bar-icons/original/1e24b1c9-b070-48d9-8a70-91aae3151830.png?im_w=240",
     hevc: "https://a0.muscache.com/videos/search-bar-icons/hevc/balloon-selected.mov#t=0.001",
     webm: "https://a0.muscache.com/videos/search-bar-icons/webm/balloon-selected.webm",
+    mobileIcon: "https://a0.muscache.com/im/pictures/AirbnbPlatformAssets/AirbnbPlatformAssets-search-bar-icons/original/bd2cb05a-95c9-41bd-8b5f-3faa08e49ba2.png?im_w=120",
+    mobileIconActive: "https://a0.muscache.com/im/pictures/AirbnbPlatformAssets/AirbnbPlatformAssets-search-bar-icons/original/20e459e2-008c-42a1-a674-8b00fd841c2f.png?im_w=120",
   },
   {
     label: "서비스",
@@ -27,6 +33,8 @@ const TABS = [
       "https://a0.muscache.com/im/pictures/airbnb-platform-assets/AirbnbPlatformAssets-search-bar-icons/original/3d67e9a9-520a-49ee-b439-7b3a75ea814d.png?im_w=240",
     hevc: "https://a0.muscache.com/videos/search-bar-icons/hevc/consierge-selected.mov#t=0.001",
     webm: "https://a0.muscache.com/videos/search-bar-icons/webm/consierge-selected.webm",
+    mobileIcon: "https://a0.muscache.com/im/pictures/AirbnbPlatformAssets/AirbnbPlatformAssets-search-bar-icons/original/7e922391-eb34-4021-9bde-92ee4cd5676c.png?im_w=120",
+    mobileIconActive: "https://a0.muscache.com/im/pictures/AirbnbPlatformAssets/AirbnbPlatformAssets-search-bar-icons/original/e048a726-9fe8-4d55-812f-173427f08588.png?im_w=120",
   },
 ];
 
@@ -38,6 +46,8 @@ interface HeaderProps {
   searchLabels?: SearchLabels;
   // 목록 페이지에서 압축 바 → 확장 검색바로 열리고 닫힐 때 알림 (오버레이 모드 제어용)
   onSearchOpenChange?: (open: boolean) => void;
+  // 모바일(743px 이하)에서 헤더 숨김 — 상세 페이지는 실제 에어비앤비처럼 갤러리가 화면 맨 위부터 시작
+  mobileHidden?: boolean;
 }
 
 export default function Header({
@@ -47,6 +57,7 @@ export default function Header({
   forceScrolled = false,
   searchLabels,
   onSearchOpenChange,
+  mobileHidden = false,
 }: HeaderProps) {
   const [scrolled, setScrolled] = useState(forceScrolled);
 
@@ -90,7 +101,18 @@ export default function Header({
   }, [activeTab]);
 
   return (
-    <header ref={headerRef} className={`${styles.wrapper} ${scrolled ? styles.scrolled : ""}`}>
+    <header
+      ref={headerRef}
+      className={[
+        styles.wrapper,
+        scrolled ? styles.scrolled : "",
+        // 모바일: 목록/상세(압축 고정)에서는 탭 줄을 숨기고 검색 알약만 남긴다
+        forceScrolled ? styles.fixedCompact : "",
+        mobileHidden ? styles.mobileHidden : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <div className={styles.inner}>
         {/* Logo */}
         <Link href="/" className={styles.logo} aria-label="홈으로">
@@ -148,6 +170,11 @@ export default function Header({
                   <source src={tab.webm} type="video/webm" />
                 </video>
               </span>
+              {/* 모바일 전용: 칩 안의 작은 정지 아이콘 (선택 여부에 따라 두 장을 교차) */}
+              <span className={styles.mobileTabIcon} aria-hidden="true">
+                <Image src={tab.mobileIcon} alt="" width={28} height={28} unoptimized />
+                <Image src={tab.mobileIconActive} alt="" width={28} height={28} unoptimized />
+              </span>
               {tab.label}
             </button>
           ))}
@@ -155,18 +182,21 @@ export default function Header({
 
         {/* Nav */}
         <nav className={styles.nav}>
-          <a href="#">호스팅하기</a>
+          <a href="#">호스팅 하기</a>
           <div className={styles.btnWrap}>
-            <button className={styles.navItem}>
+            {/* 실제 사이트와 같은 프로필 아이콘 (로그인 기능은 범위 밖이라 표시만) */}
+            <button type="button" className={styles.navItem} aria-label="프로필">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
+                viewBox="0 0 32 32"
                 aria-hidden="true"
                 role="presentation"
                 focusable="false"
-                style={{ display: "block", height: "16px", width: "16px", fill: "currentcolor" }}
+                style={{ display: "block", height: "24px", width: "24px", fill: "none", stroke: "currentcolor", strokeWidth: 2 }}
               >
-                <path d="M8 .25a7.77 7.77 0 0 1 7.75 7.78 7.75 7.75 0 0 1-7.52 7.72h-.25A7.75 7.75 0 0 1 .25 8.24v-.25A7.75 7.75 0 0 1 8 .25zm1.95 8.5h-3.9c.15 2.9 1.17 5.34 1.88 5.5H8c.68 0 1.72-2.37 1.93-5.23zm4.26 0h-2.76c-.09 1.96-.53 3.78-1.18 5.08A6.26 6.26 0 0 0 14.17 9zm-9.67 0H1.8a6.26 6.26 0 0 0 3.94 5.08 12.59 12.59 0 0 1-1.16-4.7l-.03-.38zm1.2-6.58-.12.05a6.26 6.26 0 0 0-3.83 5.03h2.75c.09-1.83.48-3.54 1.06-4.81zm2.25-.42c-.7 0-1.78 2.51-1.94 5.5h3.9c-.15-2.9-1.18-5.34-1.89-5.5h-.07zm2.28.43.03.05a12.95 12.95 0 0 1 1.15 5.02h2.75a6.28 6.28 0 0 0-3.93-5.07z" />
+                <circle cx="16" cy="16" r="14" />
+                <circle cx="16" cy="13" r="5" />
+                <path d="M6.7 26.2a10.9 10.9 0 0 1 18.6 0" />
               </svg>
             </button>
             <button className={styles.navItem}>

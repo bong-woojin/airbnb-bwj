@@ -3,6 +3,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import ListingResults from "@/components/listing/ListingResults";
 import { allExperiences, experiencesByCategory } from "@/data/experiences";
 import { toMetadata } from "@/lib/listingMeta";
+import { withCardImages } from "@/lib/gallery";
 
 const CATEGORY_TITLES: Record<string, string> = {
   "gapyeong-today": "오늘 가평군에서 진행되는 체험",
@@ -36,7 +37,7 @@ export default async function ExperiencesPage({ searchParams }: ExperiencesPageP
   return (
     <PageHeader activeTab={1}>
       <ListingResults
-        items={items}
+        items={withCardImages(items, allExperiences.map((i) => i.image))}
         title={`${titleBase} ${items.length}개`}
         basePath="/experiences"
         mapQuery="가평"

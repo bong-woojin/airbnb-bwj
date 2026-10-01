@@ -320,20 +320,22 @@
   text-align: center;
 }
 
+/* 실제 사이트 예약 버튼: 그라데이션 알약, 48px, 16px / 500 */
 .reserveBtn {
   width: 100%;
-  padding: 14px;
-  border-radius: 10px;
-  background: #ff385c;
+  height: 48px;
+  padding: 0 24px;
+  border-radius: 999px;
+  background: var(--brand-gradient);
   color: #fff;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   margin-bottom: 12px;
-  transition: background 0.2s;
+  transition: filter 0.2s;
 }
 
 .reserveBtn:hover {
-  background: #e61e4d;
+  filter: brightness(0.95);
 }
 
 .chargeNotice {
@@ -398,17 +400,18 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 14px;
-  border-radius: 10px;
-  background: #ff385c;
+  height: 48px;
+  padding: 0 24px;
+  border-radius: 999px;
+  background: var(--brand-gradient);
   color: #fff;
   font-size: 16px;
-  font-weight: 600;
-  transition: background 0.2s;
+  font-weight: 500;
+  transition: filter 0.2s;
 }
 
 .confirmBtn:hover {
-  background: #e61e4d;
+  filter: brightness(0.95);
 }
 
 .confirmBtn:disabled {
@@ -477,5 +480,158 @@
   .guestPopup {
     width: calc(100vw - 32px);
     max-width: 292px;
+  }
+}
+
+/* ── 모바일 하단 예약 바 (743px 이하에서만) ── */
+.mobileBar {
+  display: none;
+}
+
+@media (max-width: 743px) {
+  .mobileBar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 95; /* 본문 위, 모달(1000) 아래 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 24px calc(12px + env(safe-area-inset-bottom));
+    background: #fff;
+    border-top: 1px solid #ebebeb;
+  }
+
+  .mobileBarInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+  }
+
+  .mobileBarPrice {
+    font-size: 16px;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .mobileBarUnit {
+    font-weight: 400;
+  }
+
+  .mobileBarDates {
+    font-size: 14px;
+    font-weight: 600;
+    color: #222;
+    text-decoration: underline;
+    padding: 2px 0;
+  }
+
+  .mobileBarBtn {
+    flex-shrink: 0;
+    height: 48px;
+    padding: 0 28px;
+    border-radius: 999px;
+    background: var(--brand-gradient);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+/* 모바일: 예약카드의 캘린더는 전체 화면 시트, 게스트 선택은 하단 시트로 (실제 에어비앤비 모바일).
+   데스크톱 위치(카드 왼쪽으로 펼침)를 그대로 쓰면 좁은 화면에서 왼쪽 밖으로 잘린다. */
+@media (max-width: 743px) {
+  .calendarPopup {
+    position: fixed;
+    inset: 0;
+    left: 0;
+    width: auto;
+    max-width: none;
+    padding: 24px 20px 0;
+    border-radius: 0;
+    overflow-y: auto;
+    z-index: 1000;
+  }
+
+  .calendarFooter {
+    position: sticky;
+    bottom: 0;
+    margin: 12px -20px 0;
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+    background: #fff;
+  }
+
+  .guestPopup {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: auto;
+    max-width: none;
+    padding: 24px 24px calc(16px + env(safe-area-inset-bottom));
+    border-radius: 16px 16px 0 0;
+    z-index: 1000;
+    /* 시트 뒤 화면을 어둡게 — 바깥(어두운 영역)을 누르면 기존 바깥 클릭 처리로 닫힌다 */
+    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* 예약 확인 모달의 "게스트 변경" — 모바일 전용 (데스크톱은 카드에서 바로 바꾼다) */
+.confirmEdit {
+  display: none;
+}
+
+/* 모바일: 예약카드·1박 추가 카드는 숨긴다 — 하단 예약 바가 가격·날짜·예약하기를 대신한다 (실제 에어비앤비 모바일).
+   단 캘린더·게스트 팝업은 카드 안에 있으면서 화면 고정(시트)이라, 카드는 display:none 대신
+   보이지 않게만(visibility) 하고 팝업만 다시 보이게 한다. */
+@media (max-width: 743px) {
+  .promoCard {
+    display: none;
+  }
+
+  .card {
+    visibility: hidden;
+    height: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  .calendarPopup,
+  .guestPopup {
+    visibility: visible;
+  }
+
+  .confirmEdit {
+    display: inline;
+    margin-left: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #222;
+    text-decoration: underline;
+  }
+}
+
+@media (max-width: 743px) {
+  .mobileBarNoDates {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .mobileBarNoDates .mobileBarBtn {
+    width: 100%;
+  }
+
+  .mobileBarRating {
+    font-size: 14px;
+    color: #222;
   }
 }
