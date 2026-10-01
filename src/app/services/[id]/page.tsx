@@ -4,6 +4,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import ItemDetail from "@/components/detail/ItemDetail";
 import { allServices } from "@/data/services";
 import { buildDetailMeta, toMetadata } from "@/lib/listingMeta";
+import { pickGalleryImages } from "@/lib/gallery";
 
 interface ServiceDetailPageProps {
   params: Promise<{ id: string }>;
@@ -30,6 +31,8 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
     notFound();
   }
 
+  const galleryImages = pickGalleryImages(service.image, allServices.map((i) => i.image), service.id);
+
   return (
     <PageHeader activeTab={2}>
       <ItemDetail
@@ -39,6 +42,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
         categoryLabel="서비스"
         subtitle={service.location}
         perPerson
+        galleryImages={galleryImages}
       />
     </PageHeader>
   );

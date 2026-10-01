@@ -2,9 +2,11 @@ import type { ListingItem } from "./types";
 import { generateRooms } from "./generatedRooms";
 
 // 예약 가능 기간은 오늘 기준 오프셋 (startOffset일 뒤부터 nights박). 실제 날짜는 표시 시점에 계산된다.
+// maxGuests는 검색 필터·예약카드 상한·예약 API 검증이 함께 쓰는 값이다. id 1·8·15는 상세 콘텐츠
+// (components/detail/roomContent.ts)에 인원이 적혀 있으니 바꿀 때 그 문구도 같이 맞출 것.
 
 export const busanRooms: ListingItem[] = [
-  { id: "1", image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400", location: "부산 · 해운대", startOffset: 7, nights: 5, price: 1750000, rating: 4.92, tag: "게스트 선호", maxGuests: 6 },
+  { id: "1", image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400", location: "부산 · 해운대", startOffset: 7, nights: 5, price: 1750000, rating: 4.92, tag: "게스트 선호", maxGuests: 9 },
   { id: "2", image: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=400", location: "부산 · 광안리", startOffset: 10, nights: 5, price: 900000, rating: 4.87, tag: "게스트 선호", maxGuests: 4 },
   { id: "3", image: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=400", location: "부산 · 남포동", startOffset: 13, nights: 5, price: 600000, rating: 4.75, maxGuests: 2 },
   { id: "4", image: "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=400", location: "부산 · 기장", startOffset: 17, nights: 5, price: 1680000, rating: 4.95, tag: "게스트 선호", maxGuests: 8 },
@@ -15,7 +17,7 @@ export const busanRooms: ListingItem[] = [
 ];
 
 export const seoulRooms: ListingItem[] = [
-  { id: "8", image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400", location: "서울 · 마포구", startOffset: 8, nights: 5, price: 875000, rating: 4.88, maxGuests: 5 },
+  { id: "8", image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400", location: "서울 · 마포구", startOffset: 8, nights: 5, price: 875000, rating: 4.88, maxGuests: 4 },
   { id: "9", image: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=400", location: "서울 · 성수동", startOffset: 12, nights: 5, price: 380000, rating: 4.72, tag: "게스트 선호", maxGuests: 2 },
   { id: "10", image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400", location: "서울 · 강남", startOffset: 16, nights: 5, price: 1050000, rating: 4.80, maxGuests: 6 },
   { id: "11", image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400", location: "서울 · 이태원", startOffset: 21, nights: 5, price: 620000, rating: 4.65, tag: "게스트 선호", maxGuests: 4 },
@@ -26,7 +28,7 @@ export const seoulRooms: ListingItem[] = [
 ];
 
 export const jejuRooms: ListingItem[] = [
-  { id: "15", image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400", location: "제주 · 애월", startOffset: 9, nights: 5, price: 1400000, rating: 4.97, tag: "게스트 선호", maxGuests: 8 },
+  { id: "15", image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400", location: "제주 · 애월", startOffset: 9, nights: 5, price: 1400000, rating: 4.97, tag: "게스트 선호", maxGuests: 6 },
   { id: "16", image: "https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=400", location: "제주 · 서귀포", startOffset: 14, nights: 5, price: 975000, rating: 4.90, maxGuests: 6 },
   { id: "17", image: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=400", location: "제주 · 함덕", startOffset: 18, nights: 5, price: 825000, rating: 4.83, tag: "게스트 선호", maxGuests: 4 },
   { id: "18", image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400", location: "제주 · 성산", startOffset: 26, nights: 5, price: 725000, rating: 4.78, maxGuests: 4 },

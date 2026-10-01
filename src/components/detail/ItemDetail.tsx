@@ -17,6 +17,7 @@ import { EXPERIENCE_DESCRIPTION, SERVICE_DESCRIPTION } from "./content";
 import { ChevronIcon, ShareIcon, HeartIcon } from "./icons";
 import type { ListingItem } from "@/data/types";
 import { guessCity } from "@/lib/listingMeta";
+import { roomIntroMeta } from "@/lib/roomSpecs";
 
 interface ItemDetailProps {
   item: ListingItem;
@@ -29,6 +30,8 @@ interface ItemDetailProps {
   searchCheckin?: string;
   searchCheckout?: string;
   searchGuests?: number;
+  // 갤러리 5칸 사진 [대표, ...] — 데이터 풀은 서버(page.tsx)에서 골라 넘긴다 (클라이언트에서 @/data import 금지)
+  galleryImages?: string[];
 }
 
 export default function ItemDetail({
@@ -41,6 +44,7 @@ export default function ItemDetail({
   searchCheckin,
   searchCheckout,
   searchGuests,
+  galleryImages,
 }: ItemDetailProps) {
   const { isWishlisted, toggle } = useWishlist(item.id);
   const pageTitle = subtitle ?? `${item.location} · ${categoryLabel}`;
@@ -90,7 +94,7 @@ export default function ItemDetail({
         </div>
       </div>
 
-      <DetailGallery image={item.image} alt={item.location} />
+      <DetailGallery images={galleryImages ?? [item.image]} alt={item.location} />
 
       <div className={styles.lowerRow}>
         <div className={styles.lowerMain}>
@@ -99,7 +103,8 @@ export default function ItemDetail({
               <IntroSection
                 hostName={override?.hostName}
                 hostSub={override?.hostSub}
-                introMeta={override?.introMeta}
+                // 규모 문구는 최대 인원(maxGuests)에서 만든다 — 예약카드 상한·서버 검증과 같은 숫자
+                introMeta={override?.introMeta ?? (item.maxGuests ? roomIntroMeta(item.maxGuests) : undefined)}
               />
               <hr className={styles.divider} />
               <DescriptionSection text={override?.description} />
@@ -126,6 +131,7 @@ export default function ItemDetail({
             initialCheckin={searchCheckin}
             initialCheckout={searchCheckout}
             initialGuests={searchGuests}
+            maxGuests={item.maxGuests}
           />
         </div>
       </div>

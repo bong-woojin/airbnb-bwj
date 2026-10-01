@@ -5,6 +5,8 @@ import ItemDetail from "@/components/detail/ItemDetail";
 import { ROOM_OVERRIDES } from "@/components/detail/roomContent";
 import { allRooms } from "@/data/rooms";
 import { buildDetailMeta, toMetadata } from "@/lib/listingMeta";
+import { pickGalleryImages } from "@/lib/gallery";
+import { roomSubtitle } from "@/lib/roomSpecs";
 
 interface RoomDetailPageProps {
   params: Promise<{ id: string }>;
@@ -37,7 +39,10 @@ export default async function RoomDetailPage({ params, searchParams }: RoomDetai
   }
 
   const guestCount = guests ? Number(guests) : 0;
-  const subtitle = ROOM_OVERRIDES[id]?.subtitle ?? `${room.location} · 침실4 · 욕실2 · 최대9인 · 한옥 숙소`;
+  // 부제목의 인원·규모는 maxGuests에서 만든다 — 예약카드 상한·서버 검증과 같은 숫자
+  const subtitle =
+    ROOM_OVERRIDES[id]?.subtitle ?? (room.maxGuests ? roomSubtitle(room.location, room.maxGuests) : room.location);
+  const galleryImages = pickGalleryImages(room.image, allRooms.map((r) => r.image), room.id);
 
   return (
     <PageHeader activeTab={0}>
@@ -50,6 +55,7 @@ export default async function RoomDetailPage({ params, searchParams }: RoomDetai
         searchCheckin={checkin}
         searchCheckout={checkout}
         searchGuests={guestCount > 0 ? guestCount : undefined}
+        galleryImages={galleryImages}
       />
     </PageHeader>
   );

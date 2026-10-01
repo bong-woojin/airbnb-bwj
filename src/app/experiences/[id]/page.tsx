@@ -4,6 +4,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import ItemDetail from "@/components/detail/ItemDetail";
 import { allExperiences } from "@/data/experiences";
 import { buildDetailMeta, toMetadata } from "@/lib/listingMeta";
+import { pickGalleryImages } from "@/lib/gallery";
 
 interface ExperienceDetailPageProps {
   params: Promise<{ id: string }>;
@@ -30,6 +31,8 @@ export default async function ExperienceDetailPage({ params }: ExperienceDetailP
     notFound();
   }
 
+  const galleryImages = pickGalleryImages(experience.image, allExperiences.map((i) => i.image), experience.id);
+
   return (
     <PageHeader activeTab={1}>
       <ItemDetail
@@ -39,6 +42,7 @@ export default async function ExperienceDetailPage({ params }: ExperienceDetailP
         categoryLabel="체험"
         subtitle={experience.location}
         perPerson
+        galleryImages={galleryImages}
       />
     </PageHeader>
   );

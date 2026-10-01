@@ -23,11 +23,18 @@ describe("filterDestinations (여행지 자동완성)", () => {
   });
 
   test("설명으로도 찾는다", () => {
-    expect(filterDestinations("바다").map((x) => x.title)).toEqual(["부산", "강릉", "여수", "속초"]);
+    expect(filterDestinations("바다").map((x) => x.title)).toEqual(["부산"]);
   });
 
-  test("일치하는 게 없으면 빈 배열", () => {
+  test("일치하는 게 없으면 빈 배열 (데이터 없는 도시는 목록에 없다)", () => {
     expect(filterDestinations("뉴욕")).toEqual([]);
+    expect(filterDestinations("강릉")).toEqual([]);
+  });
+
+  test("탭별로 결과가 있는 도시만 — 서비스 탭에는 제주가 없다", () => {
+    expect(filterDestinations("", 0).map((x) => x.title)).toEqual(["서울", "부산", "제주"]);
+    expect(filterDestinations("", 2).map((x) => x.title)).toEqual(["서울", "부산"]);
+    expect(filterDestinations("제주", 2)).toEqual([]);
   });
 });
 

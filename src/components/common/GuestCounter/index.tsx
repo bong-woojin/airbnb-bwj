@@ -17,11 +17,13 @@ interface GuestCounterProps {
   onAdjust: (key: GuestKey, delta: number) => void;
   // BookingCard처럼 좁은 영역에서 쓰는 작은 사이즈 변형
   compact?: boolean;
+  // 행별 + 버튼 비활성화 — 인원 상한 도달, 반려동물 불가 등 (판단은 호출부가 한다)
+  incrementDisabled?: Partial<Record<GuestKey, boolean>>;
 }
 
 // 성인/어린이/유아/반려동물 인원 카운터.
 // 헤더 검색바 게스트 팝업과 상세페이지 예약카드가 공유하는 표시 전용(controlled) 컴포넌트.
-export default function GuestCounter({ guests, onAdjust, compact }: GuestCounterProps) {
+export default function GuestCounter({ guests, onAdjust, compact, incrementDisabled }: GuestCounterProps) {
   return (
     <>
       {GUEST_ROWS.map((row, i) => (
@@ -59,6 +61,7 @@ export default function GuestCounter({ guests, onAdjust, compact }: GuestCounter
                 e.stopPropagation();
                 onAdjust(row.key, 1);
               }}
+              disabled={incrementDisabled?.[row.key]}
             >
               +
             </button>

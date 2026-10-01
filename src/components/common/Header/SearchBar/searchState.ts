@@ -6,26 +6,24 @@ import type { Guests } from "@/components/common/GuestCounter";
 // ── 여행지 ────────────────────────────────────────────────
 
 // title은 검색 필터(location 접두어 매칭)와 그대로 비교되므로 도시명을 정확히 유지한다.
+// 목록에는 실제 데이터가 있는 도시만 둔다 — 눌렀는데 0건이 나오는 선택지는 고장처럼 보인다.
+// tabs: 그 도시에 결과가 있는 탭(0 숙소 / 1 체험 / 2 서비스). 서비스 데이터는 서울·부산뿐이라 제주는 제외.
+// 체험 목록은 여행지 조건을 쓰지 않아(전부 가평) 어느 도시를 골라도 0건이 되지 않는다.
+// (데이터에 도시를 추가하면 여기도 함께 추가할 것: src/data/rooms.ts, src/data/services.ts servicesByLocation)
 export const DESTINATIONS = [
-  { icon: "🌇", title: "서울", desc: "전통과 트렌드가 공존하는 도시 여행" },
-  { icon: "🌊", title: "부산", desc: "해운대와 광안리, 바다의 도시" },
-  { icon: "🏝️", title: "제주", desc: "자연이 살아있는 힐링 섬 여행" },
-  { icon: "⛰️", title: "강릉", desc: "동해 바다와 커피의 도시" },
-  { icon: "🌅", title: "여수", desc: "밤바다가 아름다운 남해 여행" },
-  { icon: "🏯", title: "경주", desc: "천년 고도에서 즐기는 역사 여행" },
-  { icon: "🍜", title: "전주", desc: "한옥마을과 미식의 고장" },
-  { icon: "🎿", title: "속초", desc: "설악산과 바다를 한번에" },
-  { icon: "🌉", title: "인천", desc: "공항과 가까운 근교 여행" },
-  { icon: "🌆", title: "대구", desc: "골목 투어와 야시장의 매력" },
+  { icon: "🌇", title: "서울", desc: "전통과 트렌드가 공존하는 도시 여행", tabs: [0, 1, 2] },
+  { icon: "🌊", title: "부산", desc: "해운대와 광안리, 바다의 도시", tabs: [0, 1, 2] },
+  { icon: "🏝️", title: "제주", desc: "자연이 살아있는 힐링 섬 여행", tabs: [0, 1] },
 ];
 
 export type Destination = (typeof DESTINATIONS)[number];
 
-// 자동완성: 입력값이 도시명이나 설명에 포함된 여행지만. 빈 입력이면 전체(추천 목록).
-export function filterDestinations(query: string): Destination[] {
+// 자동완성: 현재 탭에 결과가 있는 도시 중, 입력값이 도시명이나 설명에 포함된 것만. 빈 입력이면 전체(추천 목록).
+export function filterDestinations(query: string, tab = 0): Destination[] {
+  const available = DESTINATIONS.filter((d) => d.tabs.includes(tab));
   const q = query.trim();
-  if (!q) return DESTINATIONS;
-  return DESTINATIONS.filter((d) => d.title.includes(q) || d.desc.includes(q));
+  if (!q) return available;
+  return available.filter((d) => d.title.includes(q) || d.desc.includes(q));
 }
 
 // 검색에 쓸 여행지: 목록에서 고른 도시가 우선, 없으면 직접 입력한 텍스트

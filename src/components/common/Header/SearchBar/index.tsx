@@ -235,7 +235,7 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
                 onKeyDown={(e) => {
                   // 한글 조합 중 Enter는 조합 확정용이므로 무시
                   if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
-                  const [first] = filterDestinations(locationQuery);
+                  const [first] = filterDestinations(locationQuery, activeTab);
                   if (first && locationQuery.trim()) selectLocation(first.title);
                   else handleSearch();
                 }}
@@ -296,7 +296,7 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
               {/* key 변경 시 리마운트 → 콘텐츠 슬라이드 애니메이션 */}
               <div key={activeSection} className={contentAnimClass}>
                 {activeSection === "location" && (
-                  <LocationPopup query={locationQuery} onSelect={selectLocation} />
+                  <LocationPopup query={locationQuery} tab={activeTab} onSelect={selectLocation} />
                 )}
 
                 {activeSection === "date" && (

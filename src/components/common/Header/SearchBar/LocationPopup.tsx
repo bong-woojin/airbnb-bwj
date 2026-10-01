@@ -6,11 +6,13 @@ import { filterDestinations } from "./searchState";
 interface LocationPopupProps {
   // 여행지 입력창의 현재 값 — 이 값으로 목록을 거른다(자동완성)
   query: string;
+  // 현재 탭 — 그 탭에 결과가 있는 도시만 보여준다
+  tab: number;
   onSelect: (title: string) => void;
 }
 
-export default function LocationPopup({ query, onSelect }: LocationPopupProps) {
-  const destinations = filterDestinations(query);
+export default function LocationPopup({ query, tab, onSelect }: LocationPopupProps) {
+  const destinations = filterDestinations(query, tab);
   const searching = query.trim() !== "";
 
   return (

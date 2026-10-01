@@ -4,9 +4,10 @@ import { allExperiences } from "@/data/experiences";
 import { allServices } from "@/data/services";
 
 // 예약 요청 데모 API. 실제 백엔드 대신 요청-응답 사이클을 담당한다.
-// 지연과 확률 실패를 일부러 넣어 클라이언트의 로딩/에러 UI가 실제로 동작하는지 확인할 수 있게 했다.
+// 지연을 일부러 넣어 클라이언트의 로딩 UI가 보이게 했다. 실패 UI는 랜덤이 아니라
+// ?demo=fail 로만 재현한다 — 확률 실패는 처음 보는 사람에게 버그로 읽히기 때문.
+// (상세 페이지 URL에 ?demo=fail 을 붙이면 예약카드가 이 쿼리를 그대로 실어 보낸다)
 const DEMO_DELAY_MS = 1000;
-const DEMO_FAIL_RATE = 0.2;
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -36,8 +37,8 @@ export async function POST(request: Request) {
   // 네트워크/서버 처리 시간 시뮬레이션 — 로딩 상태가 눈에 보이게
   await new Promise((resolve) => setTimeout(resolve, DEMO_DELAY_MS));
 
-  // 확률 실패 시뮬레이션 — 에러 상태와 재시도 UI 검증용
-  if (Math.random() < DEMO_FAIL_RATE) {
+  // 실패 시뮬레이션 — 에러 상태와 재시도 UI 확인용 (?demo=fail 일 때만)
+  if (new URL(request.url).searchParams.get("demo") === "fail") {
     return Response.json(
       { error: "일시적인 오류로 예약 요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요." },
       { status: 500 },

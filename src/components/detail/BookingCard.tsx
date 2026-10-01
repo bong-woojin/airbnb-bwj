@@ -6,6 +6,7 @@ import Modal from "./Modal";
 import CalendarMonth from "@/components/common/CalendarMonth";
 import GuestCounter, { type GuestKey, type Guests } from "@/components/common/GuestCounter";
 import { addDays, formatYMD, getAvailabilityRange, getToday, parseYMD, type Availability } from "@/lib/dates";
+import { DEFAULT_MAX_GUESTS, countStayGuests } from "@/lib/roomSpecs";
 
 interface BookingCardProps {
   // 예약 API 요청에 담을 상품 id
@@ -19,6 +20,9 @@ interface BookingCardProps {
   initialCheckin?: string;
   initialCheckout?: string;
   initialGuests?: number;
+  // 최대 인원(유아 제외) — 숙소의 maxGuests. 없으면(체험/서비스) DEFAULT_MAX_GUESTS.
+  // 서버(/api/reservations)도 같은 값으로 검증하므로 + 버튼 상한·안내 문구를 여기에 맞춘다.
+  maxGuests?: number;
 }
 
 // 목데이터의 예약 가능 기간이 오늘부터 최대 약 90일 뒤까지라 캘린더도 3개월 뒤까지 탐색을 허용한다.
@@ -49,7 +53,9 @@ export default function BookingCard({
   initialCheckin,
   initialCheckout,
   initialGuests,
+  maxGuests,
 }: BookingCardProps) {
+  const guestCap = maxGuests ?? DEFAULT_MAX_GUESTS;
   const today = getToday();
   // 초기 날짜: 검색한 체크인~체크아웃이 있으면 그대로, 없으면 숙소의 가능 기간으로
   const searchStart = parseYMD(initialCheckin);
@@ -69,7 +75,13 @@ export default function BookingCard({
     return Math.min(Math.max(offset, 0), CAL_MAX_OFFSET);
   });
   // 검색한 게스트 수는 성인으로 반영 (검색바 카운터도 구분 없이 합산해 넘기므로)
-  const [guests, setGuests] = useState<Guests>({ adults: initialGuests ?? 0, children: 0, infants: 0, pets: 0 });
+  // (URL로 직접 들어온 경우를 대비해 상한으로 자른다 — 목록 검색은 이미 maxGuests 이하만 노출)
+  const [guests, setGuests] = useState<Guests>({
+    adults: Math.min(initialGuests ?? 0, guestCap),
+    children: 0,
+    infants: 0,
+    pets: 0,
+  });
   const [reserveStep, setReserveStep] = useState<ReserveStep | null>(null);
   const [reservationId, setReservationId] = useState<string | null>(null);
   const [reserveError, setReserveError] = useState<string | null>(null);
@@ -83,7 +95,9 @@ export default function BookingCard({
       ? Math.round((selectedEnd.getTime() - selectedStart.getTime()) / 86400000)
       : 0;
 
-  const totalGuests = guests.adults + guests.children + guests.infants + guests.pets;
+  // 인원 = 성인 + 어린이. 유아는 상한에 포함하지 않고(안내 문구 기준), 서버에도 이 값을 보낸다.
+  const stayGuests = countStayGuests(guests);
+  const guestSummary = `게스트 ${stayGuests || 1}명${guests.infants > 0 ? `, 유아 ${guests.infants}명` : ""}`;
 
   useEffect(() => {
     if (!activePopup) return;
@@ -122,8 +136,17 @@ export default function BookingCard({
   }
 
   function adjustGuest(key: GuestKey, delta: number) {
-    setGuests((g) => ({ ...g, [key]: Math.max(0, g[key] + delta) }));
+    setGuests((g) => {
+      if (delta > 0) {
+        // 반려동물은 동반 불가(안내 문구), 성인·어린이는 합계가 상한이면 더 늘리지 않는다
+        if (key === "pets") return g;
+        if ((key === "adults" || key === "children") && countStayGuests(g) >= guestCap) return g;
+      }
+      return { ...g, [key]: Math.max(0, g[key] + delta) };
+    });
   }
+
+  const atGuestCap = stayGuests >= guestCap;
 
   function toggleDatePopup() {
     setActivePopup((p) => (p === "date" ? null : "date"));
@@ -148,14 +171,16 @@ export default function BookingCard({
     if (!selectedStart) return;
     setReserveStep("submitting");
     try {
-      const res = await fetch("/api/reservations", {
+      // 데모: 상세 페이지 URL의 ?demo=fail 을 API로 넘겨 실패 UI를 재현한다 (route.ts 참고)
+      const demoFail = new URLSearchParams(window.location.search).get("demo") === "fail";
+      const res = await fetch(demoFail ? "/api/reservations?demo=fail" : "/api/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           itemId,
           checkin: formatYMD(selectedStart),
           checkout: formatYMD(perPerson ? selectedStart : selectedEnd ?? selectedStart),
-          guests: totalGuests || 1,
+          guests: stayGuests || 1,
         }),
       });
       const data = await res.json().catch(() => null);
@@ -256,7 +281,7 @@ export default function BookingCard({
               onClick={() => setActivePopup((p) => (p === "guests" ? null : "guests"))}
             >
               <span className={styles.fieldLabel}>인원</span>
-              <span className={styles.fieldValue}>게스트 {totalGuests || 1}명</span>
+              <span className={styles.fieldValue}>{guestSummary}</span>
             </button>
           </div>
 
@@ -377,11 +402,16 @@ export default function BookingCard({
 
           {activePopup === "guests" && (
             <div className={styles.guestPopup}>
-              <GuestCounter guests={guests} onAdjust={adjustGuest} compact />
+              <GuestCounter
+                guests={guests}
+                onAdjust={adjustGuest}
+                compact
+                incrementDisabled={{ adults: atGuestCap, children: atGuestCap, pets: true }}
+              />
               <p className={styles.guestNote}>
                 {perPerson
-                  ? "최대 신청 인원은 9명(유아 제외)입니다. 반려동물 동반은 허용되지 않습니다."
-                  : "이 숙소의 최대 숙박 인원은 9명(유아 제외) 입니다. 반려동물 동반은 허용되지 않습니다."}
+                  ? `최대 신청 인원은 ${guestCap}명(유아 제외)입니다. 반려동물 동반은 허용되지 않습니다.`
+                  : `이 숙소의 최대 숙박 인원은 ${guestCap}명(유아 제외)입니다. 반려동물 동반은 허용되지 않습니다.`}
               </p>
               <div className={styles.guestFooter}>
                 <button type="button" className={styles.guestCloseBtn} onClick={() => setActivePopup(null)}>
@@ -444,7 +474,7 @@ export default function BookingCard({
                   </div>
                   <div className={styles.confirmRow}>
                     <dt>게스트</dt>
-                    <dd>게스트 {totalGuests || 1}명</dd>
+                    <dd>{guestSummary}</dd>
                   </div>
                   <div className={styles.confirmRow}>
                     <dt>총액</dt>
