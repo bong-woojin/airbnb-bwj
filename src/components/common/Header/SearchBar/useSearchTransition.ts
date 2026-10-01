@@ -12,6 +12,8 @@ interface UseSearchTransitionOptions {
   activeSection: ActiveSection;
   openSection: (section: ActiveSection) => void;
   closeSection: () => void;
+  // 확장/압축 전환 때 키보드 포커스 이관용 — 숨겨지는 쪽 바는 inert라 포커스가 사라지므로
+  focusSection: (section: Exclude<ActiveSection, null>) => void;
 }
 
 // 확장 검색바 ↔ 압축 바 전환을 관리한다.
@@ -24,6 +26,7 @@ export function useSearchTransition({
   activeSection,
   openSection,
   closeSection,
+  focusSection,
 }: UseSearchTransitionOptions) {
   const [scrolled, setScrolled] = useState(forceScrolled);
 
@@ -33,7 +36,9 @@ export function useSearchTransition({
   const searchFlipSourceRect = useRef<DOMRect | null>(null);
 
   // 압축 바 클릭 → 확장. 세그먼트를 눌렀다면 FLIP이 끝난 뒤 해당 섹션을 바로 연다.
-  function expandFromCompact(section?: ActiveSection) {
+  // 압축 바는 숨겨지며 inert가 되므로 포커스를 확장 바의 해당 섹션(없으면 여행지)으로 옮긴다.
+  // (프로그래매틱 포커스라 마우스 사용자에게는 :focus-visible 링이 뜨지 않는다)
+  function expandFromCompact(section?: Exclude<ActiveSection, null>) {
     if (isTransitioning.current) return;
     isTransitioning.current = true;
     searchFlipSourceRect.current = compactSearchRef.current?.getBoundingClientRect() ?? null;
@@ -42,18 +47,22 @@ export function useSearchTransition({
     setTimeout(() => {
       isTransitioning.current = false;
       if (section) openSection(section);
+      focusSection(section ?? "location");
     }, 400);
   }
 
   function collapseToCompact() {
     if (isTransitioning.current) return;
     isTransitioning.current = true;
+    // 확장 바 안에 포커스가 있었다면(Escape 등 키보드로 닫은 경우) 압축 바로 돌려준다
+    const hadFocus = searchBarRef.current?.contains(document.activeElement) ?? false;
     searchFlipSourceRect.current = searchBarRef.current?.getBoundingClientRect() ?? null;
     setScrolled(true);
     onScrolledChange?.(true);
     closeSection();
     setTimeout(() => {
       isTransitioning.current = false;
+      if (hadFocus) compactSearchRef.current?.querySelector<HTMLElement>("button")?.focus({ preventScroll: true });
     }, 400);
   }
 
@@ -111,16 +120,24 @@ export function useSearchTransition({
         collapseToCompact();
       }
     };
+    // Tab으로 검색바 밖(본문)으로 나가면 바깥 클릭과 똑같이 접는다
+    const onFocusIn = (e: FocusEvent) => {
+      if (searchBarRef.current && !searchBarRef.current.contains(e.target as Node)) {
+        collapseToCompact();
+      }
+    };
     const onScroll = () => collapseToCompact();
     const onKeyDown = (e: KeyboardEvent) => {
       // 섹션 팝업이 열려있으면 그쪽 Escape 핸들러가 먼저 팝업만 닫도록 양보
       if (e.key === "Escape" && !activeSection) collapseToCompact();
     };
     document.addEventListener("mousedown", onMouseDown, true);
+    document.addEventListener("focusin", onFocusIn);
     window.addEventListener("scroll", onScroll, { passive: true });
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("mousedown", onMouseDown, true);
+      document.removeEventListener("focusin", onFocusIn);
       window.removeEventListener("scroll", onScroll);
       document.removeEventListener("keydown", onKeyDown);
     };

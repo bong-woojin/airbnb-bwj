@@ -5,6 +5,9 @@
 }
 
 .serviceTypeItem {
+  /* button 요소 — color·text-align은 상속되지 않아 보충 리셋 */
+  color: inherit;
+  text-align: left;
   display: flex;
   align-items: center;
   gap: 10px;

@@ -25,39 +25,42 @@ const CompactSearchBar = forwardRef<HTMLDivElement, CompactSearchBarProps>(funct
   { visible, labels, onExpand },
   ref
 ) {
-  // 세그먼트 클릭 시 해당 섹션이 바로 열리도록 섹션명을 함께 전달
-  const sectionClick = (section: CompactSection) =>
-    onExpand
-      ? (e: React.MouseEvent) => {
+  // 세그먼트: 확장 가능한 곳(목록/상세)에서는 버튼, 아니면(홈 — 스크롤로만 전환) 표시용 텍스트.
+  // 버튼이면 클릭 시 해당 섹션이 바로 열리도록 섹션명을 함께 전달한다.
+  function segment(section: CompactSection, label: string, className: string) {
+    if (!onExpand) return <span className={className}>{label}</span>;
+    return (
+      <button
+        type="button"
+        className={`${styles.buttonReset} ${className}`}
+        onClick={(e) => {
           e.stopPropagation();
           onExpand(section);
-        }
-      : undefined;
+        }}
+      >
+        {label}
+      </button>
+    );
+  }
 
   return (
     <div className={styles.compactSearchOuter}>
+      {/* 숨겨진 동안은 inert — opacity 0이어도 Tab 포커스가 보이지 않는 버튼으로 들어가지 않게 */}
       <div
         className={`${styles.compactSearch} ${visible ? styles.compactSearchVisible : ""}`}
         ref={ref}
+        inert={!visible}
         onClick={() => onExpand?.()}
         style={onExpand ? { cursor: "pointer" } : undefined}
       >
         <img src={HOUSE_ICON} alt="" className={styles.compactIcon} />
-        <span className={styles.compactItem} onClick={sectionClick("location")}>
-          {labels?.location ?? "어디든지"}
-        </span>
+        {segment("location", labels?.location ?? "어디든지", styles.compactItem)}
         <span className={styles.compactDivider} />
-        <span className={styles.compactItem} onClick={sectionClick("date")}>
-          {labels?.date ?? "언제든지"}
-        </span>
+        {segment("date", labels?.date ?? "언제든지", styles.compactItem)}
         <span className={styles.compactDivider} />
-        <span
-          className={labels?.guests ? styles.compactItem : styles.compactItemLight}
-          onClick={sectionClick("guest")}
-        >
-          {labels?.guests ?? "게스트 추가"}
-        </span>
-        <button className={styles.compactBtn}>
+        {segment("guest", labels?.guests ?? "게스트 추가", labels?.guests ? styles.compactItem : styles.compactItemLight)}
+        {/* 검색 아이콘: 클릭은 바깥 div의 onClick(확장)으로 버블링된다 */}
+        <button type="button" className={styles.compactBtn} aria-label="검색 조건 편집" tabIndex={onExpand ? undefined : -1}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 32 32"

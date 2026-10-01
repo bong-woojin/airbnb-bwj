@@ -49,7 +49,7 @@ src/
 ├── data/                     # 정적 목업 데이터 (rooms/experiences/services + ListingItem 타입)
 ├── hooks/                    # useAppDispatch(타입드 훅), useWishlist, useModalBehavior
 ├── lib/dates.ts              # 오늘(KST)·오프셋 → 날짜 계산, 라벨/YMD 포맷 유틸 (+ 테스트)
-└── store/                    # Redux store + roomsSlice (wishlistedIds)
+└── store/                    # Redux store + wishlistSlice (wishlistedIds)
 ```
 
 ## 아키텍처 & 데이터 흐름
@@ -99,5 +99,5 @@ src/
 
 - **새 목록 항목**: `src/data/*.ts` 배열에 추가만 하면 홈/목록/상세에 모두 반영 (상세는 `allRooms`/`allExperiences`/`allServices`에서 id로 조회).
 - **새 카테고리 페이지**: `app/<name>/page.tsx`(서버, searchParams 필터) + `app/<name>/[id]/page.tsx` 패턴을 따르고 `PageHeader` + `ListingResults` / `ItemDetail` 재사용.
-- **순수 로직**은 `lib/`에 두고 Vitest 테스트를 함께 작성 (`dates.test.ts`, `roomsSlice.test.ts` 참고).
+- **순수 로직**은 `lib/`에 두고 Vitest 테스트를 함께 작성 (`dates.test.ts`, `wishlistSlice.test.ts` 참고).
 - Next.js API 사용 전 `node_modules/next/dist/docs/` 문서 확인 — 이 버전은 학습 데이터와 다를 수 있음.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useId, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatYMD } from "@/lib/dates";
 import { searchPathForTab } from "@/lib/tabs";
@@ -51,7 +51,8 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
     prevSectionIdx,
     pillStyle,
     pillTransition,
-    sectionEls,
+    registerSection,
+    focusSection,
     openSection,
     closeSection,
   } = useSectionPopup(searchBarRef);
@@ -63,7 +64,29 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
     activeSection,
     openSection,
     closeSection,
+    focusSection,
   });
+
+  // 키보드(Enter/Space)로 섹션을 열면 팝업 안으로 포커스를 옮긴다. 팝업은 DOM상 검색 버튼 뒤에
+  // 있어서, 그대로 두면 Tab으로 다른 섹션·검색 버튼을 지나야 팝업에 닿는다.
+  // 마우스 클릭(detail > 0)은 포커스를 옮기지 않는다.
+  const popupRef = useRef<HTMLDivElement>(null);
+  const focusPopupOnOpen = useRef(false);
+  const popupId = useId();
+  const locationInputId = useId();
+
+  function openSectionFromButton(section: "date" | "guest", e: React.MouseEvent) {
+    focusPopupOnOpen.current = e.detail === 0;
+    openSection(section);
+  }
+
+  useLayoutEffect(() => {
+    if (!activeSection || !focusPopupOnOpen.current) return;
+    focusPopupOnOpen.current = false;
+    popupRef.current
+      ?.querySelector<HTMLElement>('button:not([disabled]), input, [tabindex]:not([tabindex="-1"])')
+      ?.focus({ preventScroll: true });
+  }, [activeSection]);
 
   const sectionIdx = sectionToIdx(activeSection);
 
@@ -129,6 +152,7 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
       : totalGuests > 0
         ? `게스트 ${totalGuests}명`
         : "게스트 추가";
+  const hasGuestValue = activeTab === 2 ? !!selectedServiceType : totalGuests > 0;
   const locationPlaceholder = activeTab === 1 ? "도시나 명소로 검색" : "여행지 검색";
   const thirdSectionLabel = activeTab === 2 ? "서비스 유형" : "여행자";
 
@@ -145,7 +169,8 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
       />
 
       {/* 확장 검색바 */}
-      <div className={`${styles.expandedSearch} ${scrolled ? styles.expandedSearchHidden : ""}`}>
+      {/* 압축 상태에서는 inert — 숨겨진 확장 바의 입력창·버튼으로 Tab 포커스가 들어가지 않게 */}
+      <div className={`${styles.expandedSearch} ${scrolled ? styles.expandedSearchHidden : ""}`} inert={scrolled}>
         <div
           className={`${styles.searchBar} ${activeSection ? styles.searchBarActive : ""}`}
           ref={searchBarRef}
@@ -158,22 +183,35 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
             />
           )}
 
-          {/* 여행지 */}
+          {/* 여행지 — 입력창과 지우기 버튼을 품고 있어 섹션 자체는 버튼이 될 수 없다
+              (button 안에 interactive content 중첩 금지). 키보드 진입점은 입력창(또는 선택된 도시 버튼)이고,
+              래퍼의 onClick은 섹션 아무 곳이나 눌러도 열리게 하는 마우스용 편의다. */}
           <div
-            ref={(el) => {
-              sectionEls.current[0] = el;
-            }}
+            ref={registerSection("location")}
             className={`${styles.searchSection} ${activeSection === "location" ? styles.searchSectionActive : ""}`}
             onClick={() => openSection("location")}
           >
-            <span className={styles.searchLabel}>여행지</span>
+            <label htmlFor={locationInputId} className={styles.searchLabel}>여행지</label>
             {selectedLocation ? (
               <div className={styles.locationSelected}>
-                <span className={styles.locationSelectedText}>{selectedLocation}</span>
+                <button
+                  type="button"
+                  className={`${styles.buttonReset} ${styles.locationSelectedText}`}
+                  onClick={() => openSection("location")}
+                >
+                  {selectedLocation}
+                </button>
                 {activeSection === "location" && (
                   <button
+                    type="button"
                     className={styles.locationClearBtn}
-                    onClick={(e) => { e.stopPropagation(); clearLocation(); }}
+                    aria-label="여행지 지우기"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      clearLocation();
+                      // 지우기 버튼이 사라지므로 다시 나타나는 입력창으로 포커스를 옮긴다
+                      requestAnimationFrame(() => focusSection("location"));
+                    }}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" aria-hidden="true" focusable="false" style={{ display: "block", fill: "none", height: "12px", width: "12px", stroke: "currentcolor", strokeWidth: 3.5, overflow: "visible" as const }}>
                       <path d="m6 6 20 20M26 6 6 26" />
@@ -183,8 +221,11 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
               </div>
             ) : (
               <input
+                id={locationInputId}
                 className={styles.searchInput}
                 placeholder={locationPlaceholder}
+                autoComplete="off"
+                aria-controls={activeSection === "location" ? popupId : undefined}
                 value={locationQuery}
                 onChange={(e) => {
                   setLocationQuery(e.target.value);
@@ -203,37 +244,38 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
           </div>
           <div className={styles.searchDivider} />
 
-          {/* 날짜 */}
-          <div
-            ref={(el) => {
-              sectionEls.current[1] = el;
-            }}
-            className={`${styles.searchSection} ${activeSection === "date" ? styles.searchSectionActive : ""}`}
-            onClick={() => openSection("date")}
+          {/* 날짜 — 표시만 하던 readOnly input은 버튼 안에 둘 수 없어 span으로 바꿨다 */}
+          <button
+            type="button"
+            ref={registerSection("date")}
+            className={`${styles.buttonReset} ${styles.searchSection} ${activeSection === "date" ? styles.searchSectionActive : ""}`}
+            aria-expanded={activeSection === "date"}
+            aria-controls={activeSection === "date" ? popupId : undefined}
+            onClick={(e) => openSectionFromButton("date", e)}
           >
             <span className={styles.searchLabel}>날짜</span>
-            <input
-              className={`${styles.searchInput} ${dateLabel ? styles.searchInputFilled : ""}`}
-              placeholder={dateLabel ? "" : "날짜 추가"}
-              value={dateLabel ?? ""}
-              readOnly
-            />
-          </div>
+            <span className={`${styles.searchValue} ${dateLabel ? styles.searchInputFilled : styles.searchValuePlaceholder}`}>
+              {dateLabel ?? "날짜 추가"}
+            </span>
+          </button>
           <div className={styles.searchDivider} />
 
           {/* 여행자 / 서비스 유형 */}
-          <div
-            ref={(el) => {
-              sectionEls.current[2] = el;
-            }}
-            className={`${styles.searchSection} ${activeSection === "guest" ? styles.searchSectionActive : ""}`}
-            onClick={() => openSection("guest")}
+          <button
+            type="button"
+            ref={registerSection("guest")}
+            className={`${styles.buttonReset} ${styles.searchSection} ${activeSection === "guest" ? styles.searchSectionActive : ""}`}
+            aria-expanded={activeSection === "guest"}
+            aria-controls={activeSection === "guest" ? popupId : undefined}
+            onClick={(e) => openSectionFromButton("guest", e)}
           >
             <span className={styles.searchLabel}>{thirdSectionLabel}</span>
-            <input className={styles.searchInput} placeholder={guestPlaceholder} readOnly />
-          </div>
+            <span className={`${styles.searchValue} ${hasGuestValue ? styles.searchInputFilled : styles.searchValuePlaceholder}`}>
+              {guestPlaceholder}
+            </span>
+          </button>
 
-          <button className={styles.searchBtn} onClick={handleSearch} aria-label="검색">
+          <button type="button" className={styles.searchBtn} onClick={handleSearch} aria-label="검색">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 32 32"
@@ -246,6 +288,8 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
           {/* 단일 팝업 컨테이너 — left/width 트랜지션으로 이동 */}
           {activeSection && !(activeSection === "location" && selectedLocation) && (
             <div
+              id={popupId}
+              ref={popupRef}
               className={`${styles.popup} ${prevSectionIdx < 0 ? styles.popupFirstOpen : ""}`}
               style={getPopupStyle()}
             >

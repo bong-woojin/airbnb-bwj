@@ -7,9 +7,21 @@
   text-decoration: none;
 }
 
+.cardWrap {
+  position: relative;
+}
+
+/* 찜 버튼: Link 바깥 형제라 카드 위에 절대 위치로 겹친다. 위치는 기존 .tag 줄(padding 12px)의 오른쪽 끝과 같다.
+   태그와 함께 이미지 로드 후 나타난다(.tagVisible). */
 .remark {
-  margin-left: auto;
-  transition: transform 0.2s;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  opacity: 0;
+  transition:
+    transform 0.2s,
+    opacity 0.3s ease;
 }
 
 .remark:hover {
@@ -23,7 +35,10 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  /* 찜 버튼(24px)이 빠졌어도 태그 이름의 세로 위치가 그대로이도록 줄 높이를 유지 */
+  min-height: 48px;
   padding: 12px;
+  pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s ease;
 }

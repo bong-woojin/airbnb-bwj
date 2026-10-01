@@ -105,14 +105,16 @@ export default function ServiceTypePopup({ selected, onSelect }: ServiceTypePopu
   return (
     <div className={styles.serviceTypeGrid}>
       {SERVICE_TYPES.map((svc) => (
-        <div
+        <button
+          type="button"
           key={svc.title}
           className={`${styles.serviceTypeItem} ${selected === svc.title ? styles.serviceTypeItemActive : ""}`}
+          aria-pressed={selected === svc.title}
           onClick={() => onSelect(svc.title)}
         >
-          <span className={styles.serviceTypeIcon}>{svc.icon}</span>
+          <span className={styles.serviceTypeIcon} aria-hidden="true">{svc.icon}</span>
           <span className={styles.serviceTypeLabel}>{svc.title}</span>
-        </div>
+        </button>
       ))}
     </div>
   );

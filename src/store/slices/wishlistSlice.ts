@@ -2,16 +2,16 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 // 위시리스트(찜하기) 상태만 관리하는 슬라이스.
 // 저장/복원은 providers.tsx에서 localStorage와 동기화한다.
-interface RoomsState {
+interface WishlistState {
   wishlistedIds: string[];
 }
 
-const initialState: RoomsState = {
+const initialState: WishlistState = {
   wishlistedIds: [],
 };
 
-const roomsSlice = createSlice({
-  name: "rooms",
+const wishlistSlice = createSlice({
+  name: "wishlist",
   initialState,
   reducers: {
     toggleWishlist(state, action: PayloadAction<string>) {
@@ -29,6 +29,6 @@ const roomsSlice = createSlice({
   },
 });
 
-export const { toggleWishlist, setWishlistedIds } = roomsSlice.actions;
+export const { toggleWishlist, setWishlistedIds } = wishlistSlice.actions;
 
-export default roomsSlice.reducer;
+export default wishlistSlice.reducer;

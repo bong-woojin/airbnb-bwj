@@ -17,6 +17,10 @@
 }
 
 .destItem {
+  /* button 요소 — color·text-align은 상속되지 않아 보충 리셋 */
+  color: inherit;
+  text-align: left;
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 14px;

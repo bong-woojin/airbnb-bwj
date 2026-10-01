@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
-import reducer, { setWishlistedIds, toggleWishlist } from "./roomsSlice";
+import reducer, { setWishlistedIds, toggleWishlist } from "./wishlistSlice";
 
 const empty = { wishlistedIds: [] };
 
-describe("roomsSlice - 위시리스트", () => {
+describe("wishlistSlice", () => {
   test("toggleWishlist: 없는 id는 추가된다", () => {
     const state = reducer(empty, toggleWishlist("1"));
     expect(state.wishlistedIds).toEqual(["1"]);

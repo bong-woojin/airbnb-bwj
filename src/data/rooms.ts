@@ -36,12 +36,6 @@ export const jejuRooms: ListingItem[] = [
   { id: "j8", image: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400", location: "제주 · 제주시", startOffset: 49, nights: 5, price: 540000, rating: 4.72, maxGuests: 2 },
 ];
 
-export const roomsByCity: Record<string, ListingItem[]> = {
-  "부산": busanRooms,
-  "서울": seoulRooms,
-  "제주": jejuRooms,
-};
-
 // 손으로 만든 24개 (상세 오버라이드 콘텐츠가 붙어 있음)
 const curatedRooms: ListingItem[] = [...busanRooms, ...seoulRooms, ...jejuRooms];
 

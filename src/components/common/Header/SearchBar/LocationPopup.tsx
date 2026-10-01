@@ -21,12 +21,14 @@ export default function LocationPopup({ query, onSelect }: LocationPopupProps) {
       ) : (
         <ul className={styles.destList}>
           {destinations.map((dest) => (
-            <li key={dest.title} className={styles.destItem} onClick={() => onSelect(dest.title)}>
-              <div className={styles.destIcon}>{dest.icon}</div>
-              <div className={styles.destText}>
-                <div className={styles.destTitle}>{dest.title}</div>
-                <div className={styles.destDesc}>{dest.desc}</div>
-              </div>
+            <li key={dest.title}>
+              <button type="button" className={styles.destItem} onClick={() => onSelect(dest.title)}>
+                <span className={styles.destIcon} aria-hidden="true">{dest.icon}</span>
+                <span className={styles.destText}>
+                  <span className={styles.destTitle}>{dest.title}</span>
+                  <span className={styles.destDesc}>{dest.desc}</span>
+                </span>
+              </button>
             </li>
           ))}
         </ul>
