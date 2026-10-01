@@ -9,7 +9,8 @@ interface Room {
   id: string;
   image: string;
   location: string;
-  date?: string;
+  startOffset?: number;
+  nights?: number;
   price: number;
   rating: number;
   tag?: string;

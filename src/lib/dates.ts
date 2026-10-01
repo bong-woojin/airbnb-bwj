@@ -1,52 +1,52 @@
-// 카드에 표시되는 "7월 15일~20일" / "7월 28일~8월 2일" 형식의 날짜 문자열을
-// 실제 Date 범위로 해석하는 유틸. 연도가 없으므로 "오늘 기준 다음 도래 시점"으로 본다.
+// 날짜 유틸. 목록 항목의 예약 가능 기간은 "오늘로부터 며칠 뒤"(오프셋)로 저장돼 있고,
+// 실제 Date는 여기서 오늘 기준으로 계산한다.
+//
+// 이 앱의 Date는 전부 "달력 날짜"다: 로컬 타임존 자정의 Date(y, m, d)로 만들고
+// getFullYear/getMonth/getDate로만 읽는다. 시각 정보는 쓰지 않는다.
 
 export interface DateRange {
   start: Date;
   end: Date;
 }
 
-export function getToday(): Date {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
+// 예약 가능 기간 (ListingItem의 startOffset/nights)
+export interface Availability {
+  startOffset?: number;
+  nights?: number;
 }
 
-export function parseCardDateRange(label: string | undefined, today: Date = getToday()): DateRange | null {
-  if (!label) return null;
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
-  // "7월 28일~8월 2일" (달이 넘어가는 형식)
-  let m = label.match(/(\d+)월\s*(\d+)일\s*~\s*(\d+)월\s*(\d+)일/);
-  let startMonth: number, startDay: number, endMonth: number, endDay: number;
-  if (m) {
-    [startMonth, startDay, endMonth, endDay] = [Number(m[1]) - 1, Number(m[2]), Number(m[3]) - 1, Number(m[4])];
-  } else {
-    // "7월 15일~20일" (같은 달 형식)
-    m = label.match(/(\d+)월\s*(\d+)일\s*~\s*(\d+)일/);
-    if (!m) return null;
-    [startMonth, startDay, endDay] = [Number(m[1]) - 1, Number(m[2]), Number(m[3])];
-    endMonth = startMonth;
-  }
-
-  let year = today.getFullYear();
-  let end = new Date(year, endMonth, endDay);
-  // 기간이 이미 완전히 지났으면 내년으로 해석
-  if (end < today) {
-    year += 1;
-    end = new Date(year, endMonth, endDay);
-  }
-  const start = new Date(year, startMonth, startDay);
-  return { start, end };
-}
-
-// 검색한 체크인~체크아웃이 숙소의 가능 기간 안에 완전히 포함되는지 (검색 필터 판정)
-export function isStayWithinRange(stayStart: Date, stayEnd: Date, range: DateRange): boolean {
-  return stayStart >= range.start && stayEnd <= range.end;
+// 오늘 날짜 — 실행 환경의 타임존이 아니라 항상 한국 시간(KST) 기준.
+// 서버(배포 환경은 보통 UTC)와 브라우저의 타임존이 달라도 같은 날짜가 나와야
+// SSR 결과와 hydration 결과가 일치한다. 예) UTC 15:30 = KST 다음날 00:30 → 서버/클라이언트 모두 "다음날".
+// KST는 서머타임이 없어 +9시간 고정 오프셋으로 정확히 계산된다.
+export function getToday(now: Date = new Date()): Date {
+  const kst = new Date(now.getTime() + KST_OFFSET_MS);
+  return new Date(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate());
 }
 
 // n일 뒤(음수면 앞) 날짜 — Date 생성자가 월/연도 넘김을 알아서 처리한다
 export function addDays(d: Date, n: number): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+}
+
+// 오프셋 → 실제 예약 가능 기간. 기간 정보가 없는 항목(체험/서비스)은 null.
+export function getAvailabilityRange(item: Availability, today: Date = getToday()): DateRange | null {
+  if (item.startOffset == null || item.nights == null) return null;
+  const start = addDays(today, item.startOffset);
+  return { start, end: addDays(start, item.nights) };
+}
+
+// 카드 표시용 라벨 ("7월 15일~20일"). 기간 정보가 없으면 undefined.
+export function formatAvailabilityLabel(item: Availability, today: Date = getToday()): string | undefined {
+  const range = getAvailabilityRange(item, today);
+  return range ? formatRangeLabel(range.start, range.end) : undefined;
+}
+
+// 검색한 체크인~체크아웃이 숙소의 가능 기간 안에 완전히 포함되는지 (검색 필터 판정)
+export function isStayWithinRange(stayStart: Date, stayEnd: Date, range: DateRange): boolean {
+  return stayStart >= range.start && stayEnd <= range.end;
 }
 
 // 카드/검색바 표시용 "7월 15일~20일" | "7월 29일~8월 3일" 형식으로 변환

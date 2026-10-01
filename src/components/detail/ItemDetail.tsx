@@ -128,7 +128,7 @@ export default function ItemDetail({
           <BookingCard
             itemId={item.id}
             price={item.price}
-            dateRangeLabel={isRoom ? item.date : undefined}
+            availability={isRoom ? item : undefined}
             perPerson={perPerson}
             initialCheckin={searchCheckin}
             initialCheckout={searchCheckout}

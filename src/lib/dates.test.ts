@@ -1,48 +1,92 @@
 import { describe, expect, test } from "vitest";
 import {
   addDays,
+  formatAvailabilityLabel,
   formatRangeLabel,
   formatYMD,
+  getAvailabilityRange,
+  getToday,
   isStayWithinRange,
-  parseCardDateRange,
   parseYMD,
 } from "./dates";
 
-// 테스트 기준일 고정: 2026년 7월 8일 (연도 롤오버 판정이 결정적이도록)
+// 테스트 기준일 고정: 2026년 7월 8일
 const TODAY = new Date(2026, 6, 8);
 
-describe("parseCardDateRange", () => {
-  test("같은 달 형식('7월 15일~20일')을 파싱한다", () => {
-    const r = parseCardDateRange("7월 15일~20일", TODAY);
-    expect(r).not.toBeNull();
-    expect(r!.start).toEqual(new Date(2026, 6, 15));
-    expect(r!.end).toEqual(new Date(2026, 6, 20));
+describe("getToday (KST 자정 기준 정규화)", () => {
+  // 실행 환경의 타임존과 무관하게 같은 결과가 나와야 서버/클라이언트가 일치한다.
+  test("UTC 기준 전날 15:00 이후는 KST로 다음날이다", () => {
+    expect(getToday(new Date("2026-09-30T15:30:00Z"))).toEqual(new Date(2026, 9, 1));
   });
 
-  test("달이 넘어가는 형식('7월 28일~8월 2일')을 파싱한다", () => {
-    const r = parseCardDateRange("7월 28일~8월 2일", TODAY);
-    expect(r!.start).toEqual(new Date(2026, 6, 28));
-    expect(r!.end).toEqual(new Date(2026, 7, 2));
+  test("KST 23:59까지는 같은 날이다", () => {
+    expect(getToday(new Date("2026-10-01T14:59:59Z"))).toEqual(new Date(2026, 9, 1));
+    expect(getToday(new Date("2026-10-01T15:00:00Z"))).toEqual(new Date(2026, 9, 2));
   });
 
-  test("기간이 완전히 지났으면 내년으로 해석한다", () => {
-    const r = parseCardDateRange("3월 1일~5일", TODAY);
-    expect(r!.start.getFullYear()).toBe(2027);
-    expect(r!.end.getFullYear()).toBe(2027);
+  test("해 넘김: UTC 12/31 15:00 = KST 1/1", () => {
+    expect(getToday(new Date("2026-12-31T15:00:00Z"))).toEqual(new Date(2027, 0, 1));
   });
 
-  test("시작일은 지났지만 종료일이 남았으면 올해로 해석한다", () => {
-    // 오늘이 7/8, 기간 7/1~7/10 → 아직 진행 중이므로 2026년
-    const r = parseCardDateRange("7월 1일~10일", TODAY);
-    expect(r!.start.getFullYear()).toBe(2026);
-    expect(r!.end).toEqual(new Date(2026, 6, 10));
+  test("시각 정보 없이 자정 Date를 반환한다", () => {
+    const d = getToday(new Date("2026-10-01T03:21:00Z"));
+    expect([d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds()]).toEqual([0, 0, 0, 0]);
+  });
+});
+
+describe("getAvailabilityRange (오프셋 → Date)", () => {
+  test("오늘 + startOffset부터 nights박", () => {
+    const r = getAvailabilityRange({ startOffset: 7, nights: 5 }, TODAY);
+    expect(r).toEqual({ start: new Date(2026, 6, 15), end: new Date(2026, 6, 20) });
   });
 
-  test("빈 값/형식이 다른 문자열은 null을 반환한다", () => {
-    expect(parseCardDateRange(undefined, TODAY)).toBeNull();
-    expect(parseCardDateRange("", TODAY)).toBeNull();
-    expect(parseCardDateRange("오후 5:30", TODAY)).toBeNull();
-    expect(parseCardDateRange("날짜 미정", TODAY)).toBeNull();
+  test("오프셋 0이면 오늘 시작", () => {
+    const r = getAvailabilityRange({ startOffset: 0, nights: 4 }, TODAY);
+    expect(r!.start).toEqual(TODAY);
+    expect(r!.end).toEqual(new Date(2026, 6, 12));
+  });
+
+  test("달 넘김: 기간이 다음 달로 이어진다", () => {
+    const r = getAvailabilityRange({ startOffset: 20, nights: 5 }, TODAY);
+    expect(r).toEqual({ start: new Date(2026, 6, 28), end: new Date(2026, 7, 2) });
+  });
+
+  test("해 넘김: 12월 말 시작 → 다음 해 1월 종료", () => {
+    const r = getAvailabilityRange({ startOffset: 2, nights: 5 }, new Date(2026, 11, 28));
+    expect(r).toEqual({ start: new Date(2026, 11, 30), end: new Date(2027, 0, 4) });
+  });
+
+  test("시작 자체가 다음 해로 넘어가는 큰 오프셋", () => {
+    const r = getAvailabilityRange({ startOffset: 90, nights: 6 }, new Date(2026, 9, 1));
+    expect(r).toEqual({ start: new Date(2026, 11, 30), end: new Date(2027, 0, 5) });
+  });
+
+  test("기간 정보가 없으면 null", () => {
+    expect(getAvailabilityRange({}, TODAY)).toBeNull();
+    expect(getAvailabilityRange({ startOffset: 3 }, TODAY)).toBeNull();
+    expect(getAvailabilityRange({ nights: 3 }, TODAY)).toBeNull();
+  });
+});
+
+describe("formatAvailabilityLabel (오프셋 → 카드 라벨)", () => {
+  test("같은 달", () => {
+    expect(formatAvailabilityLabel({ startOffset: 7, nights: 5 }, TODAY)).toBe("7월 15일~20일");
+  });
+
+  test("달 넘김", () => {
+    expect(formatAvailabilityLabel({ startOffset: 20, nights: 5 }, TODAY)).toBe("7월 28일~8월 2일");
+  });
+
+  test("해 넘김", () => {
+    expect(formatAvailabilityLabel({ startOffset: 2, nights: 5 }, new Date(2026, 11, 28))).toBe("12월 30일~1월 4일");
+  });
+
+  test("기준일이 바뀌면 같은 오프셋도 다른 날짜가 된다 (데이터가 낡지 않음)", () => {
+    expect(formatAvailabilityLabel({ startOffset: 7, nights: 5 }, new Date(2026, 9, 1))).toBe("10월 8일~13일");
+  });
+
+  test("기간 정보가 없으면 undefined", () => {
+    expect(formatAvailabilityLabel({}, TODAY)).toBeUndefined();
   });
 });
 
@@ -103,5 +147,9 @@ describe("formatRangeLabel", () => {
 
   test("달이 다르면 '7월 29일~8월 3일' 형식", () => {
     expect(formatRangeLabel(new Date(2026, 6, 29), new Date(2026, 7, 3))).toBe("7월 29일~8월 3일");
+  });
+
+  test("해가 다르면 달이 바뀌는 형식으로 표시한다", () => {
+    expect(formatRangeLabel(new Date(2026, 11, 29), new Date(2027, 0, 3))).toBe("12월 29일~1월 3일");
   });
 });

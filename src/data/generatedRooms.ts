@@ -1,5 +1,4 @@
 import type { ListingItem } from "./types";
-import { formatRangeLabel } from "@/lib/dates";
 
 // 손으로 만든 24개 외의 숙소를 규칙으로 대량 생성한다 (무한 스크롤/검색 데모용 볼륨 확보).
 //
@@ -31,11 +30,10 @@ export function generateRooms(count: number, imagePool: string[]): ListingItem[]
     const neighborhoods = CITY_NEIGHBORHOODS[city];
     const neighborhood = neighborhoods[Math.floor(pseudo(i * 7 + 1) * neighborhoods.length)];
 
-    // 날짜: 7월 15일 기준 0~31일 뒤 시작, 4~6박. Date 생성자가 월 넘김을 처리한다(연도는 라벨에 없음).
-    const startOffset = Math.floor(pseudo(i * 7 + 2) * 32);
+    // 예약 가능 기간: 오늘로부터 0~90일 뒤 시작, 4~6박. 오늘과 무관한 순수 숫자라
+    // 서버·클라이언트가 언제 실행해도 같은 값을 만든다 (실제 날짜는 표시 시점에 계산).
+    const startOffset = Math.floor(pseudo(i * 7 + 2) * 91);
     const nights = 4 + Math.floor(pseudo(i * 7 + 3) * 3);
-    const start = new Date(2000, 6, 15 + startOffset);
-    const end = new Date(2000, 6, 15 + startOffset + nights);
 
     const price = Math.round((250_000 + pseudo(i * 7 + 4) * 1_550_000) / 10_000) * 10_000;
     const rating = Math.round((4.5 + pseudo(i * 7 + 5) * 0.48) * 100) / 100;
@@ -44,7 +42,8 @@ export function generateRooms(count: number, imagePool: string[]): ListingItem[]
       id: `gr${i + 1}`,
       image: imagePool[Math.floor(pseudo(i * 7 + 6) * imagePool.length)],
       location: `${city} · ${neighborhood}`,
-      date: formatRangeLabel(start, end),
+      startOffset,
+      nights,
       price,
       rating,
       tag: pseudo(i * 7 + 7) < 0.3 ? "게스트 선호" : undefined,

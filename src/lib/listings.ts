@@ -2,7 +2,7 @@
 // 같은 검색 조건이면 어느 경로로 접근해도 같은 결과가 나오도록 한 곳에 모아둔다.
 
 import type { ListingItem } from "@/data/types";
-import { isStayWithinRange, parseCardDateRange, parseYMD } from "./dates";
+import { getAvailabilityRange, getToday, isStayWithinRange, parseYMD } from "./dates";
 
 export interface ListingFilter {
   // 도시명 ("부산") — 카드의 location("부산 · 해운대")이 이 값으로 시작하는 항목만
@@ -12,7 +12,7 @@ export interface ListingFilter {
   guests?: number;
 }
 
-export function filterListings(items: ListingItem[], filter: ListingFilter, today?: Date): ListingItem[] {
+export function filterListings(items: ListingItem[], filter: ListingFilter, today: Date = getToday()): ListingItem[] {
   let result = items;
 
   if (filter.location) {
@@ -20,12 +20,13 @@ export function filterListings(items: ListingItem[], filter: ListingFilter, toda
     result = result.filter((item) => item.location.startsWith(location));
   }
 
-  // 날짜: 검색한 체크인~체크아웃이 항목의 가능 기간 안에 완전히 포함되어야 노출
+  // 날짜: 검색한 체크인~체크아웃이 항목의 가능 기간(오늘 + 오프셋) 안에 완전히 포함되어야 노출.
+  // 가능 기간 정보가 없는 항목은 날짜 검색 시 제외한다.
   const searchStart = parseYMD(filter.checkin);
   const searchEnd = parseYMD(filter.checkout);
   if (searchStart && searchEnd) {
     result = result.filter((item) => {
-      const range = parseCardDateRange(item.date, today);
+      const range = getAvailabilityRange(item, today);
       return range !== null && isStayWithinRange(searchStart, searchEnd, range);
     });
   }

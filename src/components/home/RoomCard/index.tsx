@@ -5,12 +5,14 @@ import Image from "next/image";
 import Link from "next/link";
 import styles from "./RoomCard.module.css";
 import { useWishlist } from "@/hooks/useWishlist";
+import { formatAvailabilityLabel } from "@/lib/dates";
 
 interface RoomCardProps {
   id: string;
   image: string;
   location: string;
-  date?: string;
+  startOffset?: number;
+  nights?: number;
   price: number;
   rating: number;
   tag?: string;
@@ -23,7 +25,8 @@ export default function RoomCard({
   id,
   image,
   location,
-  date,
+  startOffset,
+  nights,
   price,
   rating,
   tag,
@@ -33,6 +36,8 @@ export default function RoomCard({
 }: RoomCardProps) {
   const { isWishlisted, toggle } = useWishlist(id);
   const [loaded, setLoaded] = useState(false);
+  // 오늘(KST) 기준으로 계산 — 서버 렌더링과 hydration이 같은 날짜를 쓴다 (lib/dates.ts getToday)
+  const date = formatAvailabilityLabel({ startOffset, nights });
 
   return (
     <Link href={href} className={styles.card}>

@@ -32,7 +32,7 @@ src/
 ├── app/                      # App Router 라우트
 │   ├── layout.tsx            # 루트 레이아웃 (lang=ko, Providers 래핑)
 │   ├── providers.tsx         # Redux Provider + 위시리스트 localStorage 동기화
-│   ├── page.tsx              # 홈 — 탭(숙소/체험/서비스)별 RoomSection 3개씩
+│   ├── page.tsx              # 홈 — 서버 래퍼(요청 시점 렌더링) → components/home/HomePage
 │   ├── rooms/                # 숙소 목록(검색 필터) + [id] 상세
 │   ├── experiences/          # 체험 목록(category 필터) + [id] 상세
 │   └── services/             # 서비스 목록(category/location 필터) + [id] 상세
@@ -48,7 +48,7 @@ src/
 │   └── layout/PageHeader.tsx # 홈 밖 페이지용 Header 래퍼 (탭 클릭 시 홈 이동)
 ├── data/                     # 정적 목업 데이터 (rooms/experiences/services + ListingItem 타입)
 ├── hooks/                    # useAppDispatch(타입드 훅), useWishlist, useModalBehavior
-├── lib/dates.ts              # 한국어 날짜 라벨 파싱/포맷 유틸 (+ 테스트)
+├── lib/dates.ts              # 오늘(KST)·오프셋 → 날짜 계산, 라벨/YMD 포맷 유틸 (+ 테스트)
 └── store/                    # Redux store + roomsSlice (wishlistedIds)
 ```
 
@@ -56,7 +56,8 @@ src/
 
 - **DB/API 없음**: 모든 데이터는 `src/data/*.ts`의 정적 배열(`ListingItem[]`). 목록 페이지는 **서버 컴포넌트**에서 `searchParams`를 읽어 이 배열을 필터링한다 (Next.js 16이라 `params`/`searchParams`는 **Promise — 반드시 await**).
 - **검색 흐름**: 검색바(클라이언트)에서 조건 선택 → `URLSearchParams`로 조립해 `router.push("/rooms?location=…&checkin=…&checkout=…&guests=…")` → 서버 컴포넌트가 파라미터로 필터링. **URL이 곧 검색 상태**라 새로고침/공유가 그대로 동작한다.
-- **날짜 필터**: 카드의 `"7월 15일~20일"` 같은 한국어 라벨을 `lib/dates.ts`가 실제 Date 범위로 파싱(연도 없음 → 오늘 기준 다음 도래 시점으로 해석), 검색한 체크인~체크아웃이 그 범위에 완전히 포함되는 항목만 노출.
+- **날짜 필터**: 숙소의 예약 가능 기간은 라벨이 아니라 오프셋(`startOffset`일 뒤부터 `nights`박)으로 저장된다. `lib/dates.ts`가 오늘(KST 자정 기준) + 오프셋으로 실제 Date 범위를 계산하고, 검색한 체크인~체크아웃이 그 범위에 완전히 포함되는 항목만 노출. 카드 라벨도 렌더링 시점에 같은 방식으로 계산한다.
+- **"오늘"은 반드시 `getToday()`로**: 서버(UTC)와 브라우저 타임존이 달라도 같은 날짜가 나오도록 KST로 정규화돼 있다. `new Date()`로 직접 오늘을 구하면 hydration mismatch가 난다. 날짜를 그리는 페이지는 정적 생성되면 빌드 날짜가 HTML에 박히므로 요청 시점 렌더링이어야 한다(홈은 `connection()` 사용).
 - **서버/클라이언트 경계**: 페이지(라우트)는 서버 컴포넌트로 데이터 필터링만 하고, 인터랙션이 필요한 것들(Header, SearchBar, ItemDetail, PageHeader, 홈)은 `"use client"`.
 - **전역 상태는 최소화**: Redux에는 `wishlistedIds: string[]` 하나만 있다. `providers.tsx`가 마운트 시 localStorage에서 복원하고 `store.subscribe`로 변경 시마다 저장한다. 나머지 UI 상태는 전부 컴포넌트 로컬 state.
 

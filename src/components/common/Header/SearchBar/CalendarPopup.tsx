@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import styles from "./CalendarPopup.module.css";
 import CalendarMonth from "@/components/common/CalendarMonth";
+import { getToday } from "@/lib/dates";
 
 type DateTab = "specific" | "flexible";
 type FlexDuration = "weekend" | "week" | "month" | null;
 
 const FLEX_MONTHS = Array.from({ length: 12 }, (_, i) => new Date(2026, 5 + i, 1));
-// 목데이터 날짜가 이번달~다음달 범위뿐이라 캘린더 탐색도 그만큼만 허용한다.
-const CAL_MAX_OFFSET = 0;
+// 목데이터의 예약 가능 기간이 오늘부터 최대 약 90일 뒤까지라 캘린더도 3개월 뒤까지 탐색을 허용한다.
+const CAL_MAX_OFFSET = 3;
 const DATE_FLEX_OPTIONS = [
   { label: "정확한 날짜", value: 0 },
   { label: "1일", value: 1 },
@@ -42,8 +43,7 @@ export default function CalendarPopup({ onChange }: CalendarPopupProps) {
   const [flexPage, setFlexPage] = useState(0);
   const [dateFlexibility, setDateFlexibility] = useState(0);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = getToday();
   const calLeft = new Date(today.getFullYear(), today.getMonth() + calOffset, 1);
   const calRight = new Date(today.getFullYear(), today.getMonth() + calOffset + 1, 1);
 
