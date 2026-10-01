@@ -24,7 +24,7 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
   }
 
   return (
-    <PageHeader initialTab={2}>
+    <PageHeader activeTab={2}>
       <ListingResults
         items={items}
         title={`${titleBase} ${items.length}개`}

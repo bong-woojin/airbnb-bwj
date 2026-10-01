@@ -16,7 +16,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
   }
 
   return (
-    <PageHeader initialTab={2}>
+    <PageHeader activeTab={2}>
       <ItemDetail
         item={service}
         backHref="/services"

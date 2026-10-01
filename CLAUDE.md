@@ -32,7 +32,7 @@ src/
 ├── app/                      # App Router 라우트
 │   ├── layout.tsx            # 루트 레이아웃 (lang=ko, Providers 래핑)
 │   ├── providers.tsx         # Redux Provider + 위시리스트 localStorage 동기화
-│   ├── page.tsx              # 홈 — 서버 래퍼(요청 시점 렌더링) → components/home/HomePage
+│   ├── page.tsx              # 홈 (서버) — ?tab= 으로 탭별 RoomSection 3개씩
 │   ├── rooms/                # 숙소 목록(검색 필터) + [id] 상세
 │   ├── experiences/          # 체험 목록(category 필터) + [id] 상세
 │   └── services/             # 서비스 목록(category/location 필터) + [id] 상세
@@ -45,7 +45,7 @@ src/
 │   ├── home/                 # RoomSection(가로 캐러셀), RoomCard(공용 카드)
 │   ├── listing/              # ListingResults — 좌측 카드 그리드 + 우측 고정 Google 지도 iframe
 │   ├── detail/               # 상세페이지 섹션들(갤러리/소개/설명/편의시설/지도/예약카드/모달)
-│   └── layout/PageHeader.tsx # 홈 밖 페이지용 Header 래퍼 (탭 클릭 시 홈 이동)
+│   └── layout/PageHeader.tsx # 홈·목록·상세 공용 Header 래퍼 (탭 클릭 → /?tab=…)
 ├── data/                     # 정적 목업 데이터 (rooms/experiences/services + ListingItem 타입)
 ├── hooks/                    # useAppDispatch(타입드 훅), useWishlist, useModalBehavior
 ├── lib/dates.ts              # 오늘(KST)·오프셋 → 날짜 계산, 라벨/YMD 포맷 유틸 (+ 테스트)
@@ -55,10 +55,10 @@ src/
 ## 아키텍처 & 데이터 흐름
 
 - **DB/API 없음**: 모든 데이터는 `src/data/*.ts`의 정적 배열(`ListingItem[]`). 목록 페이지는 **서버 컴포넌트**에서 `searchParams`를 읽어 이 배열을 필터링한다 (Next.js 16이라 `params`/`searchParams`는 **Promise — 반드시 await**).
-- **검색 흐름**: 검색바(클라이언트)에서 조건 선택 → `URLSearchParams`로 조립해 `router.push("/rooms?location=…&checkin=…&checkout=…&guests=…")` → 서버 컴포넌트가 파라미터로 필터링. **URL이 곧 검색 상태**라 새로고침/공유가 그대로 동작한다.
+- **검색 흐름**: 검색바(클라이언트)에서 조건 선택 → `URLSearchParams`로 조립해 `router.push("/<탭 경로>?location=…&checkin=…&checkout=…&guests=…")` (탭 경로는 `lib/tabs.ts`: /rooms·/experiences·/services) → 서버 컴포넌트가 파라미터로 필터링. 홈 탭도 `/?tab=rooms|experiences|services`. **URL이 곧 검색 상태**라 새로고침/공유가 그대로 동작한다. 단 체험/서비스 데이터에는 날짜·인원 필드가 없어 `/experiences`는 검색 파라미터를 무시하고, `/services`는 `location`(도시명 정확 일치)만 쓴다.
 - **날짜 필터**: 숙소의 예약 가능 기간은 라벨이 아니라 오프셋(`startOffset`일 뒤부터 `nights`박)으로 저장된다. `lib/dates.ts`가 오늘(KST 자정 기준) + 오프셋으로 실제 Date 범위를 계산하고, 검색한 체크인~체크아웃이 그 범위에 완전히 포함되는 항목만 노출. 카드 라벨도 렌더링 시점에 같은 방식으로 계산한다.
 - **"오늘"은 반드시 `getToday()`로**: 서버(UTC)와 브라우저 타임존이 달라도 같은 날짜가 나오도록 KST로 정규화돼 있다. `new Date()`로 직접 오늘을 구하면 hydration mismatch가 난다. 날짜를 그리는 페이지는 정적 생성되면 빌드 날짜가 HTML에 박히므로 요청 시점 렌더링이어야 한다(홈은 `connection()` 사용).
-- **서버/클라이언트 경계**: 페이지(라우트)는 서버 컴포넌트로 데이터 필터링만 하고, 인터랙션이 필요한 것들(Header, SearchBar, ItemDetail, PageHeader, 홈)은 `"use client"`.
+- **서버/클라이언트 경계**: 페이지(라우트, 홈 포함)는 전부 서버 컴포넌트로 데이터를 고르고/필터링해 props로 넘긴다. 인터랙션이 필요한 것들(PageHeader·Header·SearchBar, RoomSection·RoomCard 캐러셀, ListingGrid, ItemDetail)만 `"use client"`. **클라이언트 컴포넌트에서 `@/data/*`를 import하지 말 것** — 목업 데이터와 생성기가 브라우저 번들에 들어간다(타입 import는 무방).
 - **전역 상태는 최소화**: Redux에는 `wishlistedIds: string[]` 하나만 있다. `providers.tsx`가 마운트 시 localStorage에서 복원하고 `store.subscribe`로 변경 시마다 저장한다. 나머지 UI 상태는 전부 컴포넌트 로컬 state.
 
 ## 검색바 아키텍처 (`components/common/Header/SearchBar/`)

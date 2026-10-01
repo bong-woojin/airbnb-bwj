@@ -16,7 +16,7 @@ export default async function ExperienceDetailPage({ params }: ExperienceDetailP
   }
 
   return (
-    <PageHeader initialTab={1}>
+    <PageHeader activeTab={1}>
       <ItemDetail
         item={experience}
         backHref="/experiences"

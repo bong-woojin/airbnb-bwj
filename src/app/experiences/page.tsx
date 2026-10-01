@@ -19,7 +19,7 @@ export default async function ExperiencesPage({ searchParams }: ExperiencesPageP
   const titleBase = category ? (CATEGORY_TITLES[category] ?? "체험") : "체험";
 
   return (
-    <PageHeader initialTab={1}>
+    <PageHeader activeTab={1}>
       <ListingResults
         items={items}
         title={`${titleBase} ${items.length}개`}

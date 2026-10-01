@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatYMD } from "@/lib/dates";
+import { searchPathForTab } from "@/lib/tabs";
 import styles from "./SearchBar.module.css";
 import LocationPopup from "./LocationPopup";
 import CalendarPopup from "./CalendarPopup";
@@ -87,7 +88,8 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
     return {};
   }
 
-  // 검색: 선택한 여행지/날짜를 URL 파라미터로 넘겨 숙소 목록 페이지로 이동
+  // 검색: 선택한 조건을 URL 파라미터로 넘겨 현재 탭의 목록 페이지(/rooms, /experiences, /services)로 이동.
+  // 파라미터는 탭과 무관하게 같은 이름으로 싣는다 — 각 목록 페이지가 지원하는 것만 골라 쓴다.
   function handleSearch() {
     const params = new URLSearchParams();
     const location = resolveSearchLocation(selectedLocation, locationQuery);
@@ -98,8 +100,9 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
     }
     if (totalGuests > 0) params.set("guests", String(totalGuests));
     const query = params.toString();
+    const path = searchPathForTab(activeTab);
     closeSection();
-    router.push(query ? `/rooms?${query}` : "/rooms");
+    router.push(query ? `${path}?${query}` : path);
     // 목록 페이지에서 재검색한 경우: 같은 라우트라 컴포넌트가 유지되므로 직접 접는다
     if (forceScrolled) collapseToCompact();
   }

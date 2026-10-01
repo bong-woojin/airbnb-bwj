@@ -16,7 +16,7 @@
 
 ### 1. 검색 상태의 단일 진실 공급원은 URL
 
-검색바에서 여행지/날짜/게스트를 선택하면 `URLSearchParams`로 조립해 `/rooms?location=…&checkin=…&checkout=…&guests=…`로 이동하고, 목록 페이지(서버 컴포넌트)가 `searchParams`를 읽어 필터링합니다.
+검색바에서 여행지/날짜/게스트를 선택하면 `URLSearchParams`로 조립해 현재 탭의 목록 경로(`/rooms`, `/experiences`, `/services`)에 `?location=…&checkin=…&checkout=…&guests=…`를 붙여 이동하고, 목록 페이지(서버 컴포넌트)가 `searchParams`를 읽어 필터링합니다. 홈의 탭도 `/?tab=rooms|experiences|services`로 URL에 둡니다.
 
 - 검색 결과를 **새로고침·뒤로가기·링크 공유**해도 그대로 재현됩니다.
 - 필터링이 서버 컴포넌트에서 일어나므로 검색 상태를 위한 전역 스토어가 필요 없습니다.
@@ -63,7 +63,7 @@ Escape 닫기 / 배경 스크롤 잠금 / 포커스 트랩(Tab 순환, 닫히면
 ## 주요 기능
 
 ### 홈
-- 숙소/체험/서비스 탭 전환 (탭 아이콘 비디오 애니메이션)
+- 숙소/체험/서비스 탭 전환 — `?tab=`로 URL에 반영돼 새로고침·공유 가능 (탭 아이콘 비디오 애니메이션)
 - 도시·카테고리별 카드 캐러셀 (반응형 노출 개수, 페이지 단위 이동)
 - 스크롤 시 검색바가 압축 바로 변형 (FLIP 애니메이션 + 콘텐츠 페이드)
 
@@ -112,7 +112,7 @@ src/
 │   ├── home/             # RoomCard, RoomSection (캐러셀)
 │   ├── listing/          # ListingResults (목록 + 지도)
 │   ├── detail/           # 상세 섹션들, BookingCard, Modal
-│   └── layout/           # PageHeader (목록/상세용 헤더 래퍼)
+│   └── layout/           # PageHeader (홈·목록·상세 공용 헤더 래퍼, 클라이언트 경계)
 ├── data/                 # 목 데이터 (숙소/체험/서비스)
 ├── hooks/                # useWishlist, useModalBehavior
 ├── lib/                  # 날짜 유틸 (+ 테스트)

@@ -23,7 +23,7 @@ export default async function RoomDetailPage({ params, searchParams }: RoomDetai
   const subtitle = ROOM_OVERRIDES[id]?.subtitle ?? `${room.location} · 침실4 · 욕실2 · 최대9인 · 한옥 숙소`;
 
   return (
-    <PageHeader initialTab={0}>
+    <PageHeader activeTab={0}>
       <ItemDetail
         item={room}
         backHref="/"

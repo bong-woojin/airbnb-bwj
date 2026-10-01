@@ -46,7 +46,7 @@ export default async function RoomsPage({ searchParams }: RoomsPageProps) {
   if (guestCount > 0) apiParams.set("guests", String(guestCount));
 
   return (
-    <PageHeader initialTab={0} searchLabels={searchLabels}>
+    <PageHeader activeTab={0} searchLabels={searchLabels}>
       <ListingResults
         items={firstPage.items}
         title={title}
