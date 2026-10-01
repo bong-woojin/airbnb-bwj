@@ -16,6 +16,7 @@ import LocationSection from "./LocationSection";
 import { EXPERIENCE_DESCRIPTION, SERVICE_DESCRIPTION } from "./content";
 import { ChevronIcon, ShareIcon, HeartIcon } from "./icons";
 import type { ListingItem } from "@/data/types";
+import { guessCity } from "@/lib/listingMeta";
 
 interface ItemDetailProps {
   item: ListingItem;
@@ -28,14 +29,6 @@ interface ItemDetailProps {
   searchCheckin?: string;
   searchCheckout?: string;
   searchGuests?: number;
-}
-
-// 체험/서비스는 location이 도시명이 아니라 상품명이라, 제목에서 도시를 추정한다
-function guessCity(title: string): string {
-  if (title.includes("부산")) return "부산";
-  if (title.includes("제주")) return "제주";
-  if (title.includes("서울")) return "서울";
-  return "서울";
 }
 
 export default function ItemDetail({
