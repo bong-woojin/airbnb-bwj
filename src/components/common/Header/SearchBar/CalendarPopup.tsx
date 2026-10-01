@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styles from "./CalendarPopup.module.css";
 import CalendarMonth from "@/components/common/CalendarMonth";
 import { getToday } from "@/lib/dates";
-
-type DateTab = "specific" | "flexible";
-type FlexDuration = "weekend" | "week" | "month" | null;
+import { type DateSelection, type DateTab, selectDay } from "./searchState";
 
 const FLEX_MONTHS = Array.from({ length: 12 }, (_, i) => new Date(2026, 5 + i, 1));
 // 목데이터의 예약 가능 기간이 오늘부터 최대 약 90일 뒤까지라 캘린더도 3개월 뒤까지 탐색을 허용한다.
@@ -20,55 +18,36 @@ const DATE_FLEX_OPTIONS = [
   { label: "14일", value: 14 },
 ] as const;
 
-function formatDate(d: Date) {
-  return `${d.getMonth() + 1}월 ${d.getDate()}일`;
-}
-
 interface CalendarPopupProps {
-  onChange: (
-    placeholder: string,
-    hasSelection: boolean,
-    range: { start: Date | null; end: Date | null }
-  ) => void;
+  // 선택값은 SearchBar가 소유한다. 섹션을 옮기면 이 컴포넌트는 언마운트되지만 선택은 유지된다.
+  value: DateSelection;
+  onChange: (next: DateSelection) => void;
 }
 
-export default function CalendarPopup({ onChange }: CalendarPopupProps) {
-  const [dateTab, setDateTab] = useState<DateTab>("specific");
-  const [flexDuration, setFlexDuration] = useState<FlexDuration>(null);
-  const [selectedFlexMonths, setSelectedFlexMonths] = useState<number[]>([]);
-  const [selectedStart, setSelectedStart] = useState<Date | null>(null);
-  const [selectedEnd, setSelectedEnd] = useState<Date | null>(null);
+export default function CalendarPopup({ value, onChange }: CalendarPopupProps) {
+  // 여기 남은 state는 "보기 상태"뿐 — 다시 열 때 초기화돼도 사용자가 고른 값은 잃지 않는다.
   const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
-  const [calOffset, setCalOffset] = useState(0);
   const [flexPage, setFlexPage] = useState(0);
-  const [dateFlexibility, setDateFlexibility] = useState(0);
-
   const today = getToday();
+  // 다시 열면 체크인이 있는 달부터 보여준다 (마운트 시 한 번 계산하는 초기값 — 부모에 보고하지 않음)
+  const [calOffset, setCalOffset] = useState(() => {
+    if (!value.start) return 0;
+    const offset =
+      (value.start.getFullYear() - today.getFullYear()) * 12 + (value.start.getMonth() - today.getMonth());
+    return Math.min(Math.max(offset, 0), CAL_MAX_OFFSET);
+  });
+
   const calLeft = new Date(today.getFullYear(), today.getMonth() + calOffset, 1);
   const calRight = new Date(today.getFullYear(), today.getMonth() + calOffset + 1, 1);
 
-  const flexSuffix = dateFlexibility > 0 ? ` ±${dateFlexibility}` : "";
-  const placeholder = selectedStart
-    ? selectedEnd
-      ? `${formatDate(selectedStart)} ~ ${formatDate(selectedEnd)}${flexSuffix}`
-      : `${formatDate(selectedStart)}${flexSuffix}`
-    : "날짜 추가";
+  const { tab: dateTab, start: selectedStart, end: selectedEnd, flexibility: dateFlexibility } = value;
 
-  useEffect(() => {
-    onChange(placeholder, !!selectedStart, { start: selectedStart, end: selectedEnd });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [placeholder, selectedStart, selectedEnd]);
+  function setTab(tab: DateTab) {
+    onChange({ ...value, tab });
+  }
 
   function handleDayClick(d: Date) {
-    if (!selectedStart || selectedEnd) {
-      setSelectedStart(d);
-      setSelectedEnd(null);
-    } else if (d < selectedStart) {
-      setSelectedEnd(selectedStart);
-      setSelectedStart(d);
-    } else if (d > selectedStart) {
-      setSelectedEnd(d);
-    }
+    onChange(selectDay(value, d));
   }
 
   return (
@@ -78,7 +57,7 @@ export default function CalendarPopup({ onChange }: CalendarPopupProps) {
           className={`${styles.dateTabBtn} ${dateTab === "specific" ? styles.dateTabBtnActive : ""}`}
           onClick={(e) => {
             e.stopPropagation();
-            setDateTab("specific");
+            setTab("specific");
           }}
         >
           날짜 지정
@@ -87,7 +66,7 @@ export default function CalendarPopup({ onChange }: CalendarPopupProps) {
           className={`${styles.dateTabBtn} ${dateTab === "flexible" ? styles.dateTabBtnActive : ""}`}
           onClick={(e) => {
             e.stopPropagation();
-            setDateTab("flexible");
+            setTab("flexible");
           }}
         >
           유연한 일정
@@ -125,13 +104,13 @@ export default function CalendarPopup({ onChange }: CalendarPopupProps) {
             />
           </div>
           <div className={styles.dateFlexRow}>
-            {DATE_FLEX_OPTIONS.map(({ label, value }) => (
+            {DATE_FLEX_OPTIONS.map(({ label, value: flexibility }) => (
               <button
-                key={value}
-                className={`${styles.dateFlexBtn} ${dateFlexibility === value ? styles.dateFlexBtnActive : ""}`}
-                onClick={(e) => { e.stopPropagation(); setDateFlexibility(value); }}
+                key={flexibility}
+                className={`${styles.dateFlexBtn} ${dateFlexibility === flexibility ? styles.dateFlexBtnActive : ""}`}
+                onClick={(e) => { e.stopPropagation(); onChange({ ...value, flexibility }); }}
               >
-                {value > 0 && (
+                {flexibility > 0 && (
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" aria-hidden="true" role="presentation" focusable="false" style={{ display: "block", fill: "none", height: "10px", width: "10px", stroke: "currentcolor", strokeWidth: 2.66667, overflow: "visible" as const }}>
                     <path fill="none" d="M16 4v16m-8-8h16M8 26h16" />
                   </svg>
@@ -148,10 +127,10 @@ export default function CalendarPopup({ onChange }: CalendarPopupProps) {
             {(["weekend", "week", "month"] as const).map((key) => (
               <button
                 key={key}
-                className={`${styles.flexDurBtn} ${flexDuration === key ? styles.flexDurBtnActive : ""}`}
+                className={`${styles.flexDurBtn} ${value.flexDuration === key ? styles.flexDurBtnActive : ""}`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  setFlexDuration(key);
+                  onChange({ ...value, flexDuration: key });
                 }}
               >
                 {key === "weekend" ? "주말" : key === "week" ? "일주일" : "한달"}
@@ -177,16 +156,17 @@ export default function CalendarPopup({ onChange }: CalendarPopupProps) {
                     year: "numeric",
                     month: "long",
                   });
-                  const active = selectedFlexMonths.includes(i);
+                  const active = value.flexMonths.includes(i);
                   return (
                     <button
                       key={i}
                       className={`${styles.flexMonthCard} ${active ? styles.flexMonthCardActive : ""}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedFlexMonths((prev) =>
-                          prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]
-                        );
+                        onChange({
+                          ...value,
+                          flexMonths: active ? value.flexMonths.filter((x) => x !== i) : [...value.flexMonths, i],
+                        });
                       }}
                     >
                       {label}

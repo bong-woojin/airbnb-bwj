@@ -6,12 +6,21 @@ import { formatYMD } from "@/lib/dates";
 import styles from "./SearchBar.module.css";
 import LocationPopup from "./LocationPopup";
 import CalendarPopup from "./CalendarPopup";
-import GuestPopup from "./GuestPopup";
+import GuestCounter, { type GuestKey, type Guests } from "@/components/common/GuestCounter";
 import ServiceTypePopup from "./ServiceTypePopup";
 import CompactSearchBar, { type SearchLabels } from "./CompactSearchBar";
 import { sectionToIdx } from "./flip";
 import { useSectionPopup } from "./useSectionPopup";
 import { useSearchTransition } from "./useSearchTransition";
+import {
+  type DateSelection,
+  EMPTY_DATE_SELECTION,
+  EMPTY_GUESTS,
+  countGuests,
+  filterDestinations,
+  formatDateSelectionLabel,
+  resolveSearchLocation,
+} from "./searchState";
 
 interface SearchBarProps {
   activeTab: number;
@@ -21,13 +30,17 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({ activeTab, onScrolledChange, forceScrolled = false, searchLabels }: SearchBarProps) {
-  // 검색 조건 상태
-  const [selectedLocation, setSelectedLocation] = useState("");
+  // 검색 조건 상태 — 전부 여기서 소유하고 팝업들은 value/onChange로만 다룬다(controlled).
+  // 팝업은 섹션을 옮길 때마다 언마운트되므로, 선택값을 팝업 안에 두면 다시 열 때 사라진다.
+  // 표시 문구(날짜 라벨, 게스트 수)는 state로 따로 두지 않고 렌더링 때 계산한다.
+  const [locationQuery, setLocationQuery] = useState(""); // 여행지 입력창에 친 텍스트
+  const [selectedLocation, setSelectedLocation] = useState(""); // 목록에서 고른 도시
   const [selectedServiceType, setSelectedServiceType] = useState("");
-  const [datePlaceholder, setDatePlaceholder] = useState("날짜 추가");
-  const [hasDateSelection, setHasDateSelection] = useState(false);
-  const [dateRange, setDateRange] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null });
-  const [totalGuests, setTotalGuests] = useState(0);
+  const [dateSelection, setDateSelection] = useState<DateSelection>(EMPTY_DATE_SELECTION);
+  const [guests, setGuests] = useState<Guests>(EMPTY_GUESTS);
+
+  const dateLabel = formatDateSelectionLabel(dateSelection);
+  const totalGuests = countGuests(guests);
 
   const router = useRouter();
   const searchBarRef = useRef<HTMLDivElement>(null);
@@ -77,10 +90,11 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
   // 검색: 선택한 여행지/날짜를 URL 파라미터로 넘겨 숙소 목록 페이지로 이동
   function handleSearch() {
     const params = new URLSearchParams();
-    if (selectedLocation) params.set("location", selectedLocation);
-    if (dateRange.start && dateRange.end) {
-      params.set("checkin", formatYMD(dateRange.start));
-      params.set("checkout", formatYMD(dateRange.end));
+    const location = resolveSearchLocation(selectedLocation, locationQuery);
+    if (location) params.set("location", location);
+    if (dateSelection.start && dateSelection.end) {
+      params.set("checkin", formatYMD(dateSelection.start));
+      params.set("checkout", formatYMD(dateSelection.end));
     }
     if (totalGuests > 0) params.set("guests", String(totalGuests));
     const query = params.toString();
@@ -88,6 +102,22 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
     router.push(query ? `/rooms?${query}` : "/rooms");
     // 목록 페이지에서 재검색한 경우: 같은 라우트라 컴포넌트가 유지되므로 직접 접는다
     if (forceScrolled) collapseToCompact();
+  }
+
+  function selectLocation(title: string) {
+    setSelectedLocation(title);
+    setLocationQuery(title);
+    openSection("date");
+  }
+
+  function clearLocation() {
+    setSelectedLocation("");
+    setLocationQuery("");
+    openSection("location");
+  }
+
+  function adjustGuest(key: GuestKey, delta: number) {
+    setGuests((g) => ({ ...g, [key]: Math.max(0, g[key] + delta) }));
   }
 
   const guestPlaceholder =
@@ -140,7 +170,7 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
                 {activeSection === "location" && (
                   <button
                     className={styles.locationClearBtn}
-                    onClick={(e) => { e.stopPropagation(); setSelectedLocation(""); openSection("location"); }}
+                    onClick={(e) => { e.stopPropagation(); clearLocation(); }}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" aria-hidden="true" focusable="false" style={{ display: "block", fill: "none", height: "12px", width: "12px", stroke: "currentcolor", strokeWidth: 3.5, overflow: "visible" as const }}>
                       <path d="m6 6 20 20M26 6 6 26" />
@@ -149,7 +179,23 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
                 )}
               </div>
             ) : (
-              <input className={styles.searchInput} placeholder={locationPlaceholder} />
+              <input
+                className={styles.searchInput}
+                placeholder={locationPlaceholder}
+                value={locationQuery}
+                onChange={(e) => {
+                  setLocationQuery(e.target.value);
+                  // 탭 키로 포커스해 바로 타이핑한 경우에도 자동완성 목록이 보이도록
+                  if (activeSection !== "location") openSection("location");
+                }}
+                onKeyDown={(e) => {
+                  // 한글 조합 중 Enter는 조합 확정용이므로 무시
+                  if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
+                  const [first] = filterDestinations(locationQuery);
+                  if (first && locationQuery.trim()) selectLocation(first.title);
+                  else handleSearch();
+                }}
+              />
             )}
           </div>
           <div className={styles.searchDivider} />
@@ -164,9 +210,9 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
           >
             <span className={styles.searchLabel}>날짜</span>
             <input
-              className={`${styles.searchInput} ${hasDateSelection ? styles.searchInputFilled : ""}`}
-              placeholder={hasDateSelection ? "" : datePlaceholder}
-              value={hasDateSelection ? datePlaceholder : ""}
+              className={`${styles.searchInput} ${dateLabel ? styles.searchInputFilled : ""}`}
+              placeholder={dateLabel ? "" : "날짜 추가"}
+              value={dateLabel ?? ""}
               readOnly
             />
           </div>
@@ -203,22 +249,11 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
               {/* key 변경 시 리마운트 → 콘텐츠 슬라이드 애니메이션 */}
               <div key={activeSection} className={contentAnimClass}>
                 {activeSection === "location" && (
-                  <LocationPopup
-                    onSelect={(title) => {
-                      setSelectedLocation(title);
-                      openSection("date");
-                    }}
-                  />
+                  <LocationPopup query={locationQuery} onSelect={selectLocation} />
                 )}
 
                 {activeSection === "date" && (
-                  <CalendarPopup
-                    onChange={(text, hasSelection, range) => {
-                      setDatePlaceholder(text);
-                      setHasDateSelection(hasSelection);
-                      setDateRange(range);
-                    }}
-                  />
+                  <CalendarPopup value={dateSelection} onChange={setDateSelection} />
                 )}
 
                 {activeSection === "guest" && (
@@ -231,7 +266,7 @@ export default function SearchBar({ activeTab, onScrolledChange, forceScrolled =
                       }}
                     />
                   ) : (
-                    <GuestPopup onTotalChange={setTotalGuests} />
+                    <GuestCounter guests={guests} onAdjust={adjustGuest} />
                   )
                 )}
               </div>
